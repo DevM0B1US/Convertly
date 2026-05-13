@@ -1,0 +1,51 @@
+import { create } from "zustand";
+import { TargetFormat, ResizeConfig, ConversionSettings } from "../types/file";
+
+interface SettingsState {
+  globalFormat: TargetFormat;
+  globalQuality: number; // 1-100
+  globalResize: ResizeConfig | null;
+  globalStripMetadata: boolean;
+  perFileOverrides: Record<string, Partial<ConversionSettings>>;
+  outputDir: string | null; // null = same as source
+  maxConcurrent: number; // 1-4, default 2
+  
+  setGlobalFormat: (format: TargetFormat) => void;
+  setGlobalQuality: (quality: number) => void;
+  setGlobalResize: (resize: ResizeConfig | null) => void;
+  setGlobalStripMetadata: (strip: boolean) => void;
+  setFileOverride: (id: string, settings: Partial<ConversionSettings>) => void;
+  removeFileOverride: (id: string) => void;
+  setOutputDir: (dir: string | null) => void;
+  setMaxConcurrent: (max: number) => void;
+}
+
+export const useSettingsStore = create<SettingsState>((set) => ({
+  globalFormat: "webp",
+  globalQuality: 85,
+  globalResize: null,
+  globalStripMetadata: false,
+  perFileOverrides: {},
+  outputDir: null,
+  maxConcurrent: 2,
+
+  setGlobalFormat: (format) => set({ globalFormat: format }),
+  setGlobalQuality: (quality) => set({ globalQuality: quality }),
+  setGlobalResize: (resize) => set({ globalResize: resize }),
+  setGlobalStripMetadata: (strip) => set({ globalStripMetadata: strip }),
+  setFileOverride: (id, settings) =>
+    set((state) => ({
+      perFileOverrides: {
+        ...state.perFileOverrides,
+        [id]: { ...state.perFileOverrides[id], ...settings },
+      },
+    })),
+  removeFileOverride: (id) =>
+    set((state) => {
+      const overrides = { ...state.perFileOverrides };
+      delete overrides[id];
+      return { perFileOverrides: overrides };
+    }),
+  setOutputDir: (dir) => set({ outputDir: dir }),
+  setMaxConcurrent: (max) => set({ maxConcurrent: max }),
+}));

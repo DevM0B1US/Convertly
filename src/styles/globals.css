@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0A7C6E;
+  --color-primary-hover: #086B5F;
+  --color-secondary: #F59E0B;
+  --color-accent: #FF6B35;
+  --color-background: var(--bg-color);
+  --color-surface: var(--surface-color);
+  --color-border: var(--border-color);
+  --color-text: var(--text-color);
+  --color-muted: var(--muted-color);
+  --color-error: var(--error-color);
+  --color-success: var(--success-color);
+  
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+:root {
+  --bg-color: #FAFAFA;
+  --surface-color: #FFFFFF;
+  --border-color: #E5E7EB;
+  --text-color: #1A1A1A;
+  --muted-color: #6B7280;
+  --dropzone-border: #D1D5DB;
+  --hover-bg: #F3F4F6;
+  --error-color: #DC2626;
+  --success-color: #16A34A;
+}
+
+.dark {
+  --bg-color: #111827;
+  --surface-color: #1F2937;
+  --border-color: #374151;
+  --text-color: #F9FAFB;
+  --muted-color: #9CA3AF;
+  --dropzone-border: #4B5563;
+  --hover-bg: #2D3748;
+  --error-color: #F87171;
+  --success-color: #4ADE80;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Base custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted);
+}
