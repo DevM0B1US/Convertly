@@ -50,6 +50,17 @@ pub struct ConversionSettings {
     pub strip_metadata: bool,
 }
 
+impl Default for ConversionSettings {
+    fn default() -> Self {
+        Self {
+            target_format: "webp".to_string(),
+            quality: 85,
+            resize: None,
+            strip_metadata: false,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ResizeConfig {

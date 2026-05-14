@@ -2,6 +2,7 @@ import { QueueItem } from "../queue/QueueItem";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { useQueueStore } from "../../stores/queueStore";
 import { useFileDrop } from "../../hooks/useFileDrop";
+import { useConversion } from "../../hooks/useConversion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { addFiles } from "../../lib/ipc";
 
@@ -9,6 +10,9 @@ export const SplitPane = () => {
   const items = useQueueStore((state) => state.items);
   const addFilesToQueue = useQueueStore((state) => state.addFiles);
   const { isHovering } = useFileDrop();
+  
+  // Register the conversion event listeners
+  useConversion();
 
   const handleBrowse = async () => {
     try {

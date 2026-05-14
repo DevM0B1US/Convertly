@@ -17,4 +17,6 @@ export const clearQueue = async (): Promise<void> => {
   return await invoke("clear_queue");
 };
 
-// ... more endpoints like start_conversion, pause_conversion, etc.
+export const startConversion = async (items: QueuedFile[], outputDir?: string): Promise<void> => {
+  return await invoke("start_conversion", { items, outputDir });
+};
