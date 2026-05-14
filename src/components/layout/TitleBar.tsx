@@ -1,56 +1,51 @@
-import { Menu, Moon, Sun, Settings, Minus, Square, X } from "lucide-react";
+import { Minus, Square, X } from "lucide-react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useAppStore } from "../../stores/appStore";
 
 export const TitleBar = () => {
-  const { isDark, toggleTheme } = useAppStore();
   const appWindow = getCurrentWindow();
 
   return (
-    <div
-      data-tauri-drag-region
-      className="h-10 flex items-center justify-between px-3 bg-surface border-b border-border select-none"
-    >
-      <div className="flex items-center gap-3" data-tauri-drag-region>
-        <button className="p-1 hover:bg-hover-bg rounded text-muted hover:text-text transition-colors">
-          <Menu size={18} />
-        </button>
-        <span className="font-bold text-sm" data-tauri-drag-region>
-          Octovert
+    <div className="h-10 flex items-center justify-between bg-primary text-white select-none">
+      {/* Drag region: clicking & dragging here moves the window */}
+      <div
+        onMouseDown={(e) => {
+          // Only drag on primary button, not inside button children
+          if (e.button === 0) appWindow.startDragging();
+        }}
+        className="flex-1 flex items-center gap-2 px-3 h-full cursor-grab active:cursor-grabbing select-none"
+      >
+        {/* Simple Octopus SVG icon */}
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ pointerEvents: "none" }}>
+          <circle cx="12" cy="10" r="5" />
+          <path d="M12 15c-2.5 0-4.5 1-4.5 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5 1 1.5 2.5 1.5 2 1.5 2-1.5c0-2-2-3-4.5-3Z" />
+          <path d="M7 13c-2 0-4 1-4 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5" />
+          <path d="M17 13c2 0 4 1 4 3 0 1.5-.5 3-2 3s-2.5-1.5-2.5-1.5" />
+        </svg>
+        <span className="font-medium text-sm" style={{ pointerEvents: "none" }}>
+          Convertly - File Converter
         </span>
       </div>
 
-      <div className="flex items-center gap-1">
-        <button
-          onClick={toggleTheme}
-          className="p-1.5 hover:bg-hover-bg rounded text-muted hover:text-text transition-colors mr-1"
-          title="Toggle Theme"
-        >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-        <button
-          className="p-1.5 hover:bg-hover-bg rounded text-muted hover:text-text transition-colors mr-2"
-          title="Settings"
-        >
-          <Settings size={16} />
-        </button>
-        
-        {/* Window controls */}
+      {/* Window controls: NOT inside drag region so clicks are received */}
+      <div className="flex items-center gap-1 px-2 h-full shrink-0">
         <button
           onClick={() => appWindow.minimize()}
-          className="p-1.5 hover:bg-hover-bg rounded text-muted hover:text-text transition-colors"
+          title="Minimize"
+          className="p-1.5 hover:bg-white/20 rounded transition-colors cursor-pointer"
         >
           <Minus size={16} />
         </button>
         <button
           onClick={() => appWindow.toggleMaximize()}
-          className="p-1.5 hover:bg-hover-bg rounded text-muted hover:text-text transition-colors"
+          title="Maximize"
+          className="p-1.5 hover:bg-white/20 rounded transition-colors cursor-pointer"
         >
           <Square size={14} />
         </button>
         <button
           onClick={() => appWindow.close()}
-          className="p-1.5 hover:bg-error hover:text-white rounded text-muted transition-colors"
+          title="Close"
+          className="p-1.5 hover:bg-red-500 rounded transition-colors cursor-pointer"
         >
           <X size={16} />
         </button>

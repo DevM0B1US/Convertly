@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+/* stylelint-disable at-rule-no-unknown */
+/* csslint ignore:start */
 @theme {
   --color-primary: #0A7C6E;
   --color-primary-hover: #086B5F;
@@ -52,6 +54,12 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* Tauri specific fixes to ensure elements remain clickable */
+button, select, input, textarea, a, [role="button"], .cursor-pointer {
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
 }
 
 /* Base custom scrollbar */

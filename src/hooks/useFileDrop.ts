@@ -2,11 +2,6 @@ import { useEffect, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useQueueStore } from "../stores/queueStore";
 import { addFiles } from "../lib/ipc";
-import { Event } from "@tauri-apps/api/event";
-
-interface DropEventPayload {
-  paths: string[];
-}
 
 export const useFileDrop = () => {
   const [isHovering, setIsHovering] = useState(false);
@@ -14,7 +9,7 @@ export const useFileDrop = () => {
 
   useEffect(() => {
     const unlistenDragEnter = getCurrentWindow().onDragDropEvent((event) => {
-      if (event.payload.type === "over") {
+      if (event.payload.type === "over" || event.payload.type === "enter") {
         setIsHovering(true);
       } else if (event.payload.type === "drop") {
         setIsHovering(false);
@@ -29,7 +24,7 @@ export const useFileDrop = () => {
               console.error("Failed to add files:", err);
             });
         }
-      } else if (event.payload.type === "leave" || event.payload.type === "cancel") {
+      } else {
         setIsHovering(false);
       }
     });

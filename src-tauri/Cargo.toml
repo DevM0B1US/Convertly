@@ -1,12 +1,12 @@
 [package]
-name = "octovert"
+name = "convertly"
 version = "0.1.0"
 description = "High-performance, privacy-first, multi-format file converter"
 authors = ["you"]
 edition = "2021"
 
 [lib]
-name = "octovert_lib"
+name = "convertly_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

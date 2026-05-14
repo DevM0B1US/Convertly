@@ -45,17 +45,38 @@ export const SplitPane = () => {
 
   return (
     <div className="flex h-full w-full">
-      {/* Left panel (Queue) - 80% */}
-      <div className="flex-[4] p-4 overflow-y-auto flex flex-col h-full">
-        <div 
+      <div className="flex-4 p-6 overflow-y-auto flex flex-col h-full bg-[#F8FAF9]">
+        <button
+          type="button"
           onClick={handleBrowse}
-          className={`border-2 border-dashed rounded-lg min-h-[100px] flex items-center justify-center transition-colors mb-4 cursor-pointer shrink-0
+          aria-label="Browse files to add to queue"
+          className={`border-2 border-dashed rounded-lg min-h-[160px] flex flex-col items-center justify-center transition-colors mb-6 cursor-pointer shrink-0 w-full
             ${isHovering 
               ? 'border-primary bg-primary/5 text-primary' 
-              : 'border-dropzone-border text-muted hover:bg-hover-bg'}`}
+              : 'border-primary bg-white text-text hover:bg-gray-50'}`}
         >
-          Drop files here or click to browse
-        </div>
+          <div className="flex items-center gap-2 mb-3">
+            {/* Octopus Icon */}
+            <svg aria-hidden="true" focusable="false" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2F4F4F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="10" r="5" />
+              <path d="M12 15c-2.5 0-4.5 1-4.5 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5 1 1.5 2.5 1.5 2 1.5 2-1.5c0-2-2-3-4.5-3Z" />
+              <path d="M7 13c-2 0-4 1-4 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5" />
+              <path d="M17 13c2 0 4 1 4 3 0 1.5-.5 3-2 3s-2.5-1.5-2.5-1.5" />
+              <circle cx="10" cy="9" r="0.5" fill="#2F4F4F" />
+              <circle cx="14" cy="9" r="0.5" fill="#2F4F4F" />
+              <path d="M11 11c.5.5 1.5.5 2 0" />
+            </svg>
+            {/* File Icon Overlay */}
+            <svg aria-hidden="true" focusable="false" width="32" height="32" viewBox="0 0 24 24" fill="#0A7C6E" stroke="none" className="-ml-4 mt-2 shadow-sm rounded">
+              <path d="M4 4h6l2 2h8v12H4z" />
+              <path d="M10 14l5-3-5-3v6z" fill="white" />
+            </svg>
+            <svg aria-hidden="true" focusable="false" width="32" height="32" viewBox="0 0 24 24" fill="#F59E0B" stroke="none" className="-ml-6 -mt-6 shadow-sm rounded -z-10">
+               <path d="M4 4h6l2 2h8v12H4z" />
+            </svg>
+          </div>
+          <span className="text-lg font-medium text-gray-800">Drag & Drop Files Here</span>
+        </button>
         
         <div className="flex-1 overflow-y-auto min-h-0">
           {items.length === 0 ? (
