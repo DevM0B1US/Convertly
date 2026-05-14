@@ -20,3 +20,11 @@ export const clearQueue = async (): Promise<void> => {
 export const startConversion = async (items: QueuedFile[], outputDir?: string): Promise<void> => {
   return await invoke("start_conversion", { items, outputDir });
 };
+
+export const cancelConversion = async (id: string): Promise<void> => {
+  return await invoke("cancel_conversion", { id });
+};
+
+export const pauseConversion = async (id: string): Promise<void> => {
+  return await invoke("pause_conversion", { id });
+};

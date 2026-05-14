@@ -16,6 +16,8 @@ pub fn run() {
             commands::files::remove_file,
             commands::files::clear_queue,
             commands::convert::start_conversion,
+            commands::convert::cancel_conversion,
+            commands::convert::pause_conversion,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

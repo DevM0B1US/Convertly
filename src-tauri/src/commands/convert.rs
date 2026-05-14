@@ -1,9 +1,11 @@
-use crate::types::{ConversionSettings, QueuedFile, MediaType, ConversionStatus};
+use crate::types::{QueuedFile, MediaType};
 use crate::converter::image::convert_image;
+use crate::converter::media::convert_media;
 use std::path::Path;
-use std::fs;
 use tauri::AppHandle;
 use tauri::Emitter;
+use std::sync::Arc;
+use tokio::sync::Semaphore;
 
 #[derive(serde::Serialize, Clone)]
 struct ProgressEvent {
@@ -17,31 +19,47 @@ pub async fn start_conversion(
     items: Vec<QueuedFile>,
     output_dir: Option<String>,
 ) -> Result<(), String> {
+    // PRD: max_concurrent = 2
+    let semaphore = Arc::new(Semaphore::new(2));
     
-    // Process items sequentially for MVP
-    // In production, we'd use a QueueManager with max_concurrent
+    let out_dir_base = output_dir.map(std::path::PathBuf::from);
+
+    let mut tasks = Vec::new();
+
     for item in items {
-        if let MediaType::Image = item.media_type {
+        let app_handle = app_handle.clone();
+        let semaphore = semaphore.clone();
+        let out_dir_base = out_dir_base.clone();
+
+        let task = tokio::spawn(async move {
+            let _permit = semaphore.acquire().await.unwrap();
+
             let input_path = Path::new(&item.path);
-            let out_dir_path = if let Some(ref dir) = output_dir {
-                std::path::PathBuf::from(dir)
+            let out_dir_path = if let Some(ref dir) = out_dir_base {
+                dir.clone()
             } else {
                 input_path.parent().unwrap_or(Path::new("")).to_path_buf()
             };
 
-            // Use global settings or item overrides
             let settings = item.settings.unwrap_or_default();
 
-            // Emit progress 0%
             let _ = app_handle.emit("conversion:progress", ProgressEvent {
                 id: item.id.to_string(),
                 percent: 0.0,
             });
 
-            // Convert image
-            match convert_image(input_path, &out_dir_path, &settings) {
+            let result = match item.media_type {
+                MediaType::Image => {
+                    convert_image(input_path, &out_dir_path, &settings)
+                },
+                MediaType::Video | MediaType::Audio => {
+                    convert_media(&app_handle, input_path, &out_dir_path, &settings, &item.media_type).await
+                },
+                _ => Err("Unknown media type".to_string()),
+            };
+
+            match result {
                 Ok(out_path) => {
-                    // Emit progress 100% and done
                     let _ = app_handle.emit("conversion:progress", ProgressEvent {
                         id: item.id.to_string(),
                         percent: 100.0,
@@ -59,8 +77,20 @@ pub async fn start_conversion(
                     }));
                 }
             }
-        }
+        });
+
+        tasks.push(task);
     }
 
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn cancel_conversion(id: String) -> Result<(), String> {
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn pause_conversion(id: String) -> Result<(), String> {
     Ok(())
 }
