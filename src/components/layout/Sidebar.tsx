@@ -19,7 +19,7 @@ const NavButton = ({ icon, view, label, activeView, onClick }: NavButtonProps) =
         className={`relative p-3 w-full flex justify-center rounded-md transition-all duration-150
           ${isActive
             ? "text-primary"
-            : "text-gray-400 hover:text-white hover:bg-white/10"
+            : "text-muted hover:text-text hover:bg-black/5 dark:hover:bg-white/10"
           }`}
       >
         {/* Active indicator bar */}
@@ -45,7 +45,7 @@ export const Sidebar = () => {
   const theme = useAppStore((s) => s.isDark);
 
   return (
-    <div className="w-16 bg-[#2C3E50] border-r border-border flex flex-col items-center py-4 justify-between h-full">
+    <div className="w-16 bg-surface border-r border-border flex flex-col items-center py-4 justify-between h-full transition-colors duration-300">
       {/* Top nav */}
       <div className="flex flex-col gap-1 w-full">
         <NavButton

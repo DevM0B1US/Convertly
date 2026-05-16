@@ -66,7 +66,7 @@ pub async fn add_files(paths: Vec<String>) -> Result<Vec<QueuedFile>, String> {
 }
 
 #[tauri::command]
-pub async fn remove_file(id: String) -> Result<(), String> {
+pub async fn remove_file(_id: String) -> Result<(), String> {
     Ok(())
 }
 

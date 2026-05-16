@@ -4,6 +4,7 @@ use crate::converter::media::convert_media;
 use std::path::Path;
 use tauri::AppHandle;
 use tauri::Emitter;
+use tauri::Manager;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 
@@ -38,7 +39,17 @@ pub async fn start_conversion(
             let out_dir_path = if let Some(ref dir) = out_dir_base {
                 dir.clone()
             } else {
-                input_path.parent().unwrap_or(Path::new("")).to_path_buf()
+                // Default to Downloads/Convertly if no output_dir provided
+                if let Ok(downloads) = app_handle.path().download_dir() {
+                    let default_path = downloads.join("Convertly");
+                    if !default_path.exists() {
+                        let _ = std::fs::create_dir_all(&default_path);
+                    }
+                    default_path
+                } else {
+                    // Fallback to original folder if Downloads can't be resolved
+                    input_path.parent().unwrap_or(Path::new("")).to_path_buf()
+                }
             };
 
             let settings = item.settings.unwrap_or_default();
@@ -86,11 +97,11 @@ pub async fn start_conversion(
 }
 
 #[tauri::command]
-pub async fn cancel_conversion(id: String) -> Result<(), String> {
+pub async fn cancel_conversion(_id: String) -> Result<(), String> {
     Ok(())
 }
 
 #[tauri::command]
-pub async fn pause_conversion(id: String) -> Result<(), String> {
+pub async fn pause_conversion(_id: String) -> Result<(), String> {
     Ok(())
 }

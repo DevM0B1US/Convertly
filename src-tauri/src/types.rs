@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QueuedFile {

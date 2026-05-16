@@ -67,7 +67,7 @@ export const QueueItem = ({ id, name, size, format, status, progress }: QueueIte
   const finalIconBgStyle = isImage ? { background: 'linear-gradient(135deg, #FF9F1C 50%, #0A7C6E 50%)' } : {};
 
   return (
-    <div className="flex flex-col bg-white rounded-lg transition-colors py-2">
+    <div className="flex flex-col bg-surface border border-border rounded-lg transition-colors py-2">
       <div className="flex items-center justify-between p-2">
         <div className="flex items-center gap-4 flex-1">
           {/* File Type Icon */}
@@ -86,8 +86,8 @@ export const QueueItem = ({ id, name, size, format, status, progress }: QueueIte
 
           {/* File Details */}
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="font-bold text-[15px] text-gray-800 truncate">{name}</span>
-            <span className="text-xs text-gray-500">{size} • {format}</span>
+            <span className="font-bold text-[15px] text-text truncate">{name}</span>
+            <span className="text-xs text-muted">{size} • {format}</span>
           </div>
         </div>
 
@@ -118,7 +118,7 @@ export const QueueItem = ({ id, name, size, format, status, progress }: QueueIte
           {/* 3-dots Menu */}
           <button 
             onClick={() => setExpanded(!expanded)}
-            className="p-1 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-100 transition-colors"
+            className="p-1 text-muted hover:text-text rounded hover:bg-muted/10 transition-colors"
           >
             <MoreVertical size={20} strokeWidth={2.5} />
           </button>
@@ -127,14 +127,14 @@ export const QueueItem = ({ id, name, size, format, status, progress }: QueueIte
 
       {/* Expanded Menu (Settings Override & Delete) */}
       {expanded && (
-        <div className="mx-2 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md flex gap-4 items-center">
+        <div className="mx-2 mt-2 p-3 bg-background border border-border rounded-md flex gap-4 items-center">
           {status === "queued" && (
             <>
               <div className="flex-1">
                 <select 
                   value={itemFormat}
                   onChange={(e) => handleFormatChange(e.target.value as TargetFormat)}
-                  className="w-full bg-white border border-gray-300 rounded p-1.5 text-sm outline-none focus:border-primary"
+                  className="w-full bg-surface border border-border rounded p-1.5 text-sm outline-none focus:border-primary text-text"
                 >
                   <option value="webp">WebP</option>
                   <option value="mp4">MP4</option>
@@ -158,7 +158,7 @@ export const QueueItem = ({ id, name, size, format, status, progress }: QueueIte
               if (status === "converting" || status === "paused") cancelConversion(id);
               removeFile(id);
             }}
-            className="flex items-center gap-1 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded text-sm font-medium transition-colors ml-auto"
+            className="flex items-center gap-1 px-3 py-1.5 text-error hover:bg-error/10 rounded text-sm font-medium transition-colors ml-auto"
           >
             <Trash2 size={16} />
             Remove

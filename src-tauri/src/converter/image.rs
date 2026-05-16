@@ -1,8 +1,7 @@
 use crate::types::ConversionSettings;
-use image::{ImageReader, ImageFormat, DynamicImage, imageops::FilterType};
+use image::{ImageReader, ImageFormat, imageops::FilterType};
 use std::path::{Path, PathBuf};
 use std::fs::File;
-use std::io::BufWriter;
 
 pub fn convert_image(
     input_path: &Path,
@@ -56,10 +55,6 @@ pub fn convert_image(
     }
 
     // Save with the appropriate format
-    let mut file = match File::create(&output_path) {
-        Ok(f) => f,
-        Err(e) => return Err(format!("Failed to create output file: {}", e)),
-    };
 
     let result = match settings.target_format.as_str() {
         "webp" => {
