@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type AppView = "converter" | "history" | "queue";
+export type AppView = "converter" | "history";
 
 interface AppState {
   isDark: boolean;

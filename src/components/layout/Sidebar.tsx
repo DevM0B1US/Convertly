@@ -1,4 +1,4 @@
-import { ArrowLeftRight, FileText, List, HelpCircle, Moon, Sun } from "lucide-react";
+import { ArrowLeftRight, FileText, HelpCircle, Moon, Sun } from "lucide-react";
 import { useAppStore, AppView } from "../../stores/appStore";
 
 interface NavButtonProps {
@@ -61,13 +61,6 @@ export const Sidebar = () => {
           label="History"
           activeView={activeView}
           onClick={() => setView("history")}
-        />
-        <NavButton
-          icon={<List size={22} strokeWidth={1.5} />}
-          view="queue"
-          label="Queue"
-          activeView={activeView}
-          onClick={() => setView("queue")}
         />
       </div>
 

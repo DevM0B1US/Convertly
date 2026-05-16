@@ -41,6 +41,7 @@ export interface QueuedFile {
   mediaType: MediaType;
   metadata: FileMetadata;
   settings: ConversionSettings | null; // null means use global
+  sourceDir?: string;
   status: ConversionStatus;
   progress?: number;
   error?: string;

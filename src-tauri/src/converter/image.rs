@@ -1,14 +1,19 @@
 use crate::types::ConversionSettings;
-use image::{ImageReader, ImageFormat, imageops::FilterType};
+use image::{ImageReader, ImageFormat, imageops::FilterType, ExtendedColorType, ImageEncoder};
+use image::codecs::jpeg::JpegEncoder;
+use image::codecs::avif::AvifEncoder;
 use std::path::{Path, PathBuf};
 use std::fs::File;
+use tauri::Emitter;
+use tauri::AppHandle;
 
 pub fn convert_image(
+    app_handle: &AppHandle,
     input_path: &Path,
     output_dir: &Path,
     settings: &ConversionSettings,
+    file_id: &str,
 ) -> Result<PathBuf, String> {
-    // Determine output extension based on target format
     let ext = match settings.target_format.as_str() {
         "webp" => "webp",
         "avif" => "avif",
@@ -24,24 +29,23 @@ pub fn convert_image(
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("output");
-    
+
     let output_path = output_dir.join(format!("{}.{}", file_stem, ext));
 
-    // Open and decode image
-    let reader = match ImageReader::open(input_path) {
-        Ok(r) => r,
-        Err(e) => return Err(format!("Failed to open image: {}", e)),
-    };
+    let reader = ImageReader::open(input_path)
+        .map_err(|e| format!("Failed to open image: {}", e))?;
 
-    let mut img = match reader.with_guessed_format() {
-        Ok(r) => match r.decode() {
-            Ok(i) => i,
-            Err(e) => return Err(format!("Failed to decode image: {}", e)),
-        },
-        Err(e) => return Err(format!("Failed to guess format: {}", e)),
-    };
+    let mut img = reader.with_guessed_format()
+        .map_err(|e| format!("Failed to guess format: {}", e))?
+        .decode()
+        .map_err(|e| format!("Failed to decode image: {}", e))?;
 
-    // Apply Resize
+    let _ = app_handle.emit("conversion:progress", serde_json::json!({
+        "id": file_id,
+        "percent": 50.0,
+        "stage": "encoding",
+    }));
+
     if let Some(resize) = &settings.resize {
         if resize.enabled {
             if let (Some(w), Some(h)) = (resize.width, resize.height) {
@@ -54,38 +58,47 @@ pub fn convert_image(
         }
     }
 
-    // Save with the appropriate format
+    let quality = settings.quality.clamp(1, 100);
 
-    let result = match settings.target_format.as_str() {
-        "webp" => {
-            // WebP quality configuration is a bit more complex in pure image-rs, 
-            // but we can map the 1-100 quality directly to webp encoding if supported.
-            // Using standard save for MVP
-            img.save_with_format(&output_path, ImageFormat::WebP)
-        },
-        "avif" => {
-            img.save_with_format(&output_path, ImageFormat::Avif)
-        },
+    match settings.target_format.as_str() {
         "jpeg" => {
-            img.save_with_format(&output_path, ImageFormat::Jpeg) // Needs custom encoder for quality
-        },
+            let file = File::create(&output_path)
+                .map_err(|e| format!("Failed to create output file: {}", e))?;
+            let rgb = img.to_rgb8();
+            JpegEncoder::new_with_quality(file, quality)
+                .encode(rgb.as_raw(), rgb.width(), rgb.height(), ExtendedColorType::Rgb8)
+                .map_err(|e| format!("Failed to encode JPEG: {}", e))?;
+        }
+        "avif" => {
+            let file = File::create(&output_path)
+                .map_err(|e| format!("Failed to create output file: {}", e))?;
+            let rgba = img.to_rgba8();
+            AvifEncoder::new_with_speed_quality(file, 6, quality)
+                .write_image(rgba.as_raw(), rgba.width(), rgba.height(), ExtendedColorType::Rgba8)
+                .map_err(|e| format!("Failed to encode AVIF: {}", e))?;
+        }
+        "webp" => {
+            img.save_with_format(&output_path, ImageFormat::WebP)
+                .map_err(|e| format!("Failed to encode WebP: {}", e))?;
+        }
         "png" => {
             img.save_with_format(&output_path, ImageFormat::Png)
-        },
+                .map_err(|e| format!("Failed to encode PNG: {}", e))?;
+        }
         "gif" => {
             img.save_with_format(&output_path, ImageFormat::Gif)
-        },
+                .map_err(|e| format!("Failed to encode GIF: {}", e))?;
+        }
         "bmp" => {
             img.save_with_format(&output_path, ImageFormat::Bmp)
-        },
+                .map_err(|e| format!("Failed to encode BMP: {}", e))?;
+        }
         "tiff" => {
             img.save_with_format(&output_path, ImageFormat::Tiff)
-        },
+                .map_err(|e| format!("Failed to encode TIFF: {}", e))?;
+        }
         _ => unreachable!(),
-    };
-
-    match result {
-        Ok(_) => Ok(output_path),
-        Err(e) => Err(format!("Failed to encode image: {}", e)),
     }
+
+    Ok(output_path)
 }

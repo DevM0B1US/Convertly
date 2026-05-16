@@ -3,9 +3,16 @@ pub mod metadata;
 pub mod converter;
 pub mod commands;
 
+use commands::convert::ActiveConversions;
+use std::collections::HashMap;
+use std::sync::Mutex;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(ActiveConversions {
+            tasks: Mutex::new(HashMap::new()),
+        })
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())

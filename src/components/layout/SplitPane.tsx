@@ -6,7 +6,8 @@ import { useConversion } from "../../hooks/useConversion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { addFiles } from "../../lib/ipc";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Plus } from "lucide-react";
+import { VisualFormatSelector } from "../convert/VisualFormatSelector";
 
 export const SplitPane = () => {
   const items = useQueueStore((state) => state.items);
@@ -46,42 +47,34 @@ export const SplitPane = () => {
   return (
     <div className="flex h-full w-full">
       <div className="flex-4 p-6 overflow-y-auto flex flex-col h-full bg-background transition-colors duration-300">
-        <button
-          type="button"
-          onClick={handleBrowse}
-          aria-label="Browse files to add to queue"
-          className={`border-2 border-dashed rounded-lg min-h-[160px] flex flex-col items-center justify-center transition-colors mb-6 cursor-pointer shrink-0 w-full
-            ${isHovering 
-              ? 'border-primary bg-primary/5 text-primary' 
-              : 'border-border bg-surface text-text hover:bg-black/5 dark:hover:bg-white/5'}`}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            {/* Octopus Icon */}
-            <svg aria-hidden="true" focusable="false" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
-              <circle cx="12" cy="10" r="5" />
-              <path d="M12 15c-2.5 0-4.5 1-4.5 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5 1 1.5 2.5 1.5 2 1.5 2-1.5c0-2-2-3-4.5-3Z" />
-              <path d="M7 13c-2 0-4 1-4 3 0 1.5.5 3 2 3s2.5-1.5 2.5-1.5" />
-              <path d="M17 13c2 0 4 1 4 3 0 1.5-.5 3-2 3s-2.5-1.5-2.5-1.5" />
-              <circle cx="10" cy="9" r="0.5" fill="currentColor" />
-              <circle cx="14" cy="9" r="0.5" fill="currentColor" />
-              <path d="M11 11c.5.5 1.5.5 2 0" />
-            </svg>
-            {/* File Icon Overlay */}
-            <svg aria-hidden="true" focusable="false" width="32" height="32" viewBox="0 0 24 24" fill="#0A7C6E" stroke="none" className="-ml-4 mt-2 shadow-sm rounded">
-              <path d="M4 4h6l2 2h8v12H4z" />
-              <path d="M10 14l5-3-5-3v6z" fill="white" />
-            </svg>
-            <svg aria-hidden="true" focusable="false" width="32" height="32" viewBox="0 0 24 24" fill="#F59E0B" stroke="none" className="-ml-6 -mt-6 shadow-sm rounded -z-10">
-               <path d="M4 4h6l2 2h8v12H4z" />
-            </svg>
+        {/* Functional Visual Selector */}
+        <VisualFormatSelector onBrowse={handleBrowse} />
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col">
+            <h2 className="text-xs font-black text-muted uppercase tracking-[0.2em]">Queue</h2>
+            <span className="text-[10px] text-muted/50 font-medium mt-0.5">Manage and individualize your conversions</span>
           </div>
-          <span className="text-lg font-medium text-text">Drag & Drop Files Here</span>
-        </button>
-        
-        <div className="flex-1 overflow-y-auto min-h-0">
+          <button
+            onClick={handleBrowse}
+            className="flex items-center gap-2 px-3 h-8 bg-surface border border-border text-muted rounded-lg hover:text-text hover:border-muted transition-all text-[11px] font-bold uppercase tracking-wider shadow-sm"
+          >
+            <Plus size={14} />
+            Add More
+          </button>
+        </div>
+
+        <div 
+          className={`flex-1 overflow-y-auto min-h-0 rounded-xl transition-all border-2 border-dashed p-4
+            ${isHovering 
+              ? 'border-primary bg-primary/5' 
+              : 'border-transparent'}`}
+        >
           {items.length === 0 ? (
-            <div className="text-center text-muted text-sm mt-8">
-              Your queue is empty.
+            <div className="h-full flex flex-col items-center justify-center text-center text-muted p-12">
+              <img src="/logo.avif" alt="Convertly" width="64" height="64" className="mb-4 opacity-40" />
+              <p className="text-sm">Your queue is empty.</p>
+              <p className="text-xs mt-1">Drag and drop files here or click "Add Files"</p>
             </div>
           ) : (
             <DragDropContext onDragEnd={onDragEnd}>
@@ -90,7 +83,7 @@ export const SplitPane = () => {
                   <div 
                     {...provided.droppableProps} 
                     ref={provided.innerRef}
-                    className="flex flex-col gap-2 pb-4"
+                    className="flex flex-col gap-3 pb-4"
                   >
                     {items.map((item, index) => (
                       <Draggable key={item.id} draggableId={item.id} index={index}>
@@ -112,7 +105,6 @@ export const SplitPane = () => {
                                 id={item.id}
                                 name={item.fileName}
                                 size={(item.sizeBytes / 1024 / 1024).toFixed(2) + " MB"}
-                                format={`${item.settings?.targetFormat || "default"} - ${item.settings?.quality || 85}%`}
                                 status={item.status}
                                 progress={item.progress}
                               />

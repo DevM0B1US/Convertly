@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { TargetFormat, ResizeConfig, ConversionSettings } from "../types/file";
 
 interface SettingsState {
@@ -20,32 +21,37 @@ interface SettingsState {
   setMaxConcurrent: (max: number) => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
-  globalFormat: "webp",
-  globalQuality: 85,
-  globalResize: null,
-  globalStripMetadata: false,
-  perFileOverrides: {},
-  outputDir: null,
-  maxConcurrent: 2,
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      globalFormat: "webp" as TargetFormat,
+      globalQuality: 85,
+      globalResize: null,
+      globalStripMetadata: false,
+      perFileOverrides: {},
+      outputDir: null,
+      maxConcurrent: 2,
 
-  setGlobalFormat: (format) => set({ globalFormat: format }),
-  setGlobalQuality: (quality) => set({ globalQuality: quality }),
-  setGlobalResize: (resize) => set({ globalResize: resize }),
-  setGlobalStripMetadata: (strip) => set({ globalStripMetadata: strip }),
-  setFileOverride: (id, settings) =>
-    set((state) => ({
-      perFileOverrides: {
-        ...state.perFileOverrides,
-        [id]: { ...state.perFileOverrides[id], ...settings },
-      },
-    })),
-  removeFileOverride: (id) =>
-    set((state) => {
-      const overrides = { ...state.perFileOverrides };
-      delete overrides[id];
-      return { perFileOverrides: overrides };
+      setGlobalFormat: (format) => set({ globalFormat: format }),
+      setGlobalQuality: (quality) => set({ globalQuality: quality }),
+      setGlobalResize: (resize) => set({ globalResize: resize }),
+      setGlobalStripMetadata: (strip) => set({ globalStripMetadata: strip }),
+      setFileOverride: (id, settings) =>
+        set((state) => ({
+          perFileOverrides: {
+            ...state.perFileOverrides,
+            [id]: { ...state.perFileOverrides[id], ...settings },
+          },
+        })),
+      removeFileOverride: (id) =>
+        set((state) => {
+          const overrides = { ...state.perFileOverrides };
+          delete overrides[id];
+          return { perFileOverrides: overrides };
+        }),
+      setOutputDir: (dir) => set({ outputDir: dir }),
+      setMaxConcurrent: (max) => set({ maxConcurrent: max }),
     }),
-  setOutputDir: (dir) => set({ outputDir: dir }),
-  setMaxConcurrent: (max) => set({ maxConcurrent: max }),
-}));
+    { name: "convertly-settings" }
+  )
+);

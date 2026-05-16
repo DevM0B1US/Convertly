@@ -12,9 +12,14 @@ pub struct QueuedFile {
     #[serde(rename = "mediaType")]
     pub media_type: MediaType,
     pub metadata: FileMetadata,
+    #[serde(default)]
     pub settings: Option<ConversionSettings>,
+    #[serde(default, rename = "sourceDir")]
+    pub source_dir: Option<String>,
     pub status: ConversionStatus,
+    #[serde(default)]
     pub progress: Option<f32>,
+    #[serde(default)]
     pub error: Option<String>,
 }
 
@@ -30,12 +35,19 @@ pub enum MediaType {
 #[serde(rename_all = "camelCase")]
 pub struct FileMetadata {
     pub format: String,
+    #[serde(default)]
     pub codec: Option<String>,
+    #[serde(default)]
     pub width: Option<u32>,
+    #[serde(default)]
     pub height: Option<u32>,
+    #[serde(default)]
     pub duration_secs: Option<f64>,
+    #[serde(default)]
     pub bitrate_kbps: Option<u64>,
+    #[serde(default)]
     pub sample_rate: Option<u32>,
+    #[serde(default)]
     pub channels: Option<u8>,
     pub has_metadata: bool,
 }
@@ -45,6 +57,7 @@ pub struct FileMetadata {
 pub struct ConversionSettings {
     pub target_format: String,
     pub quality: u8,
+    #[serde(default)]
     pub resize: Option<ResizeConfig>,
     pub strip_metadata: bool,
 }
@@ -64,7 +77,9 @@ impl Default for ConversionSettings {
 #[serde(rename_all = "camelCase")]
 pub struct ResizeConfig {
     pub enabled: bool,
+    #[serde(default)]
     pub width: Option<u32>,
+    #[serde(default)]
     pub height: Option<u32>,
     pub maintain_aspect_ratio: bool,
 }
