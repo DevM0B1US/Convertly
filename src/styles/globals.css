@@ -101,8 +101,7 @@ button, select, input, textarea, a, [role="button"], .cursor-pointer {
 
 @media (prefers-reduced-motion: no-preference) {
   .animate-queue-slide-in {
-    animation: queueItemSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    opacity: 0;
+    animation: queueItemSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 

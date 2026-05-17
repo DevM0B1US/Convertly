@@ -71,7 +71,7 @@ Fonts are loaded correctly. `index.html` includes Google Fonts preconnect + styl
 
 **Best component: TitleBar** — Clean teal background, white logo in a circular container with `shadow-sm`, macOS-style window controls. Well-executed and professional.
 
-**Strongest UX: VisualFormatSelector** — The source → target flow with dynamic icons, drag-over glow (`shadow-[0_0_25px_rgba(10,124,110,0.15)]`), plus the rotate-90 on the Plus icon during drag are the app's standout visual moments.
+**Strongest UX: VisualFormatSelector** — The source → target flow with dynamic icons and drag-over glow (`shadow-[0_0_25px_rgba(10,124,110,0.15)]`) are the app's standout visual moments.
 
 **Best interaction: FormatSelectorPopover** — Search bar + category sidebar + formats grid with glassmorphic backdrop. Premium feel, excellent UX.
 

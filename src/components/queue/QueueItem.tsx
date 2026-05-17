@@ -3,7 +3,7 @@ import { useQueueStore } from "../../stores/queueStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { TargetFormat } from "../../types/file";
 import { cancelConversion, startConversion } from "../../lib/ipc";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { FormatSelectorPopover } from "./FormatSelectorPopover";
 
@@ -13,9 +13,10 @@ interface QueueItemProps {
   size: string;
   status: "queued" | "converting" | "paused" | "done" | "error";
   progress?: number;
+  index: number;
 }
 
-export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) => {
+export const QueueItem = memo(({ id, name, size, status, progress, index }: QueueItemProps) => {
   const removeFile = useQueueStore((state) => state.removeFile);
   const updateItem = useQueueStore((state) => state.updateItem);
   
@@ -34,6 +35,15 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [imageError, setImageError] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
+
+  useEffect(() => {
+    const delay = index * 40;
+    const timer = setTimeout(() => {
+      setShouldAnimate(false);
+    }, delay + 300);
+    return () => clearTimeout(timer);
+  }, []); // Run exactly once on initial mount!
 
   useEffect(() => {
     setImageError(false);
@@ -50,6 +60,18 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   if (isVideo) Icon = Film;
   else if (isAudio) Icon = Music;
   else if (isImage) Icon = ImageIcon;
+
+  const imageUrl = useMemo(() => {
+    if (isImage && item?.path && !imageError) {
+      try {
+        return convertFileSrc(item.path);
+      } catch (err) {
+        console.error("Failed to convert image src:", err);
+        return null;
+      }
+    }
+    return null;
+  }, [isImage, item?.path, imageError]);
 
   const handleRemove = () => {
     if (status === "converting" || status === "paused") cancelConversion(id);
@@ -118,13 +140,18 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   }, [isPopoverOpen]);
 
   return (
-    <div className="relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-all duration-200">
+    <div 
+      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-all duration-200 ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
+      style={{
+        animationDelay: shouldAnimate ? `${index * 40}ms` : undefined
+      }}
+    >
       <div className="flex items-center gap-4 px-4 pt-4 pb-3">
         {/* File Type Icon / Preview */}
         <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 shadow-sm">
-          {isImage && item?.path && !imageError ? (
+          {imageUrl ? (
             <img 
-              src={convertFileSrc(item.path)} 
+              src={imageUrl} 
               alt={name} 
               className="w-full h-full object-cover select-none pointer-events-none"
               onError={() => setImageError(true)}
@@ -232,4 +259,6 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
       </div>
     </div>
   );
-};
+});
+
+QueueItem.displayName = "QueueItem";

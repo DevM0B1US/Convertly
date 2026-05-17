@@ -2,9 +2,10 @@ import { RefreshCw, ChevronDown, Image as ImageIcon, Film, Music, Plus, Files } 
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useQueueStore } from "../../stores/queueStore";
 import { TargetFormat } from "../../types/file";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { FormatSelectorPopover } from "../queue/FormatSelectorPopover";
 import { addFiles } from "../../lib/ipc";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 const ALL_FORMATS = {
   image: [
@@ -43,36 +44,53 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
   const [isOpen, setIsOpen] = useState(false);
   const [isDragOverBox, setIsDragOverBox] = useState(false);
   const addFilesToQueue = useQueueStore((state) => state.addFiles);
+  const dragCounter = useRef(0);
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current++;
+    if (dragCounter.current === 1) {
+      setIsDragOverBox(true);
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOverBox(true);
   };
 
-  const handleDragLeave = () => {
-    setIsDragOverBox(false);
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOverBox(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      const paths = files
-        .map((f: any) => f.path || f.name)
-        .filter(Boolean);
-
-      if (paths.length > 0) {
-        try {
-          const newItems = await addFiles(paths);
-          addFilesToQueue(newItems);
-        } catch (err) {
-          console.error("Failed to add dropped files:", err);
-        }
-      }
+    dragCounter.current--;
+    if (dragCounter.current === 0) {
+      setIsDragOverBox(false);
     }
   };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current = 0;
+    setIsDragOverBox(false);
+  };
+
+  useEffect(() => {
+    const unlistenPromise = getCurrentWindow().onDragDropEvent(async (event) => {
+      if (event.payload.type === "drop") {
+        const paths = event.payload.paths as string[];
+        if (paths && paths.length > 0) {
+          try {
+            const newItems = await addFiles(paths);
+            addFilesToQueue(newItems);
+          } catch (err) {
+            console.error("Failed to add dropped files natively:", err);
+          }
+        }
+      }
+    });
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, [addFilesToQueue]);
 
   const queueItems = useQueueStore((state) => state.items);
   const mediaTypes = useMemo(() => {
@@ -86,7 +104,7 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
     const count = queueItems.length;
     if (count === 0) {
       return {
-        icon: <Plus size={24} className={`transition-all duration-200 ${isDragOverBox ? 'text-primary scale-110 rotate-90' : 'text-muted group-hover/card:text-primary'}`} />,
+        icon: <Plus size={24} className={`transition-all duration-200 ${isDragOverBox ? 'text-primary scale-110' : 'text-muted group-hover/card:text-primary'}`} />,
         label: "Add Files"
       };
     }
@@ -143,7 +161,7 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
   return (
     <div 
       onDragOver={handleDragOver}
-      onDragEnter={handleDragOver}
+      onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`w-full rounded-lg mb-8 transition-all duration-300 group/card select-none
@@ -155,7 +173,7 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
         
         {/* Source: Dynamic Queue Indicator / Add Trigger */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover/card:text-primary transition-colors duration-300">Source</span>
+          <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Source</span>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -171,8 +189,8 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
                   }`}`}
           >
             {sourceDisplay.icon}
-            <span className={`text-[10px] font-black mt-1.5 uppercase tracking-wider transition-colors duration-300
-              ${queueItems.length > 0 ? 'text-text' : 'text-muted group-hover/card:text-primary'}`}
+            <span className={`text-[10px] font-black mt-1.5 uppercase tracking-wider
+              ${queueItems.length > 0 ? 'text-text' : 'text-muted'}`}
             >
               {sourceDisplay.label}
             </span>
