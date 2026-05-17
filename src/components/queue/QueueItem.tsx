@@ -41,9 +41,10 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const [imageLoaded, setImageLoaded] = useState(false);
   // Limit slide-in animation to the first screenful of items (index <= 15)
   // to avoid setting thousands of timers and delaying renders for long lists
-  const [shouldAnimate, setShouldAnimate] = useState(true);
+  const [shouldAnimate, setShouldAnimate] = useState(() => index <= 15);
 
   useEffect(() => {
+    if (index > 15) return;
     const delay = index * 40;
     const timer = setTimeout(() => {
       setShouldAnimate(false);
@@ -170,7 +171,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   return (
     <div 
-      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.002] hover:border-border/80 transition-all duration-200 overflow-hidden ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
+      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.002] hover:border-border/80 transition-[background-color,border-color,box-shadow,transform] duration-200 overflow-hidden ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
       style={{
         animationDelay: shouldAnimate ? `${index * 40}ms` : undefined
       }}

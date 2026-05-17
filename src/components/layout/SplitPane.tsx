@@ -74,7 +74,7 @@ export const SplitPane = () => {
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0 rounded-xl transition-all scroll-smooth">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0 rounded-xl transition-colors duration-300">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center text-muted p-12">
               <img src="/logo.avif" alt="Convertly" width="96" height="96" className="mb-4 opacity-40 select-none pointer-events-none" />
