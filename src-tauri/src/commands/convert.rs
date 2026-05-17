@@ -135,18 +135,43 @@ pub async fn start_conversion(
             "gif" => "gif",
             "bmp" => "bmp",
             "tiff" => "tiff",
+            "hdr" => "hdr",
+            "ico" | "cur" => "ico",
+            "qoi" => "qoi",
+            "pnm" | "ppm" | "pgm" | "pbm" => "pnm",
+            "ff" | "farbfeld" => "ff",
             "mp4" | "mp4-hevc" => "mp4",
             "webm" => "webm",
-            "avi" => "avi",
+            "avi" | "divx" => "avi",
             "mkv" => "mkv",
             "mov" => "mov",
+            "flv" | "f4v" | "swf" => "flv",
+            "ts" | "mts" | "m2ts" => "ts",
+            "mpg" | "mpeg" | "vob" => "mpg",
+            "m4v" => "m4v",
+            "3gp" | "3g2" => "3gp",
+            "ogv" => "ogv",
+            "wmv" => "wmv",
+            "mxf" => "mxf",
+            "rm" | "rmvb" => "rm",
             "mp3" => "mp3",
             "flac" => "flac",
             "wav" => "wav",
             "aac" => "aac",
-            "ogg" => "ogg",
+            "ogg" | "oga" => "ogg",
             "m4a" => "m4a",
             "wma" => "wma",
+            "opus" => "opus",
+            "aiff" | "aifc" | "aif" => "aiff",
+            "ac3" => "ac3",
+            "alac" => "alac",
+            "amr" => "amr",
+            "mp1" => "mp1",
+            "mp2" => "mp2",
+            "mpc" => "mpc",
+            "au" => "au",
+            "dsd" | "dsf" | "dff" => "dsf",
+            "mqa" => "mqa",
             _ => return Err(format!("Unsupported target format: {}", settings.target_format)),
         };
 
@@ -252,7 +277,44 @@ pub async fn start_conversion(
 
                     let cancel_flag_for_image = cancel_flag_for_task.clone();
                     let result = tokio::task::spawn_blocking(move || {
-                        convert_image(&handle, &input, &out_path, &s, &fid, cancel_flag_for_image)
+                        let is_heic_input = input.extension()
+                            .map(|e| e.to_string_lossy().to_lowercase())
+                            .map(|ext| ext == "heic" || ext == "heif")
+                            .unwrap_or(false);
+                        let is_heic_output = s.target_format.to_lowercase() == "heic" || s.target_format.to_lowercase() == "heif";
+
+                        let is_jxl_input = input.extension()
+                            .map(|e| e.to_string_lossy().to_lowercase())
+                            .map(|ext| ext == "jxl")
+                            .unwrap_or(false);
+
+                        let is_svg_input = input.extension()
+                            .map(|e| e.to_string_lossy().to_lowercase())
+                            .map(|ext| ext == "svg" || ext == "svgz")
+                            .unwrap_or(false);
+
+                        let is_raw_input = input.extension()
+                            .map(|e| e.to_string_lossy().to_lowercase())
+                            .map(|ext| {
+                                matches!(ext.as_str(), 
+                                    "nef" | "nrw" | "cr2" | "crw" | "cr3" | "arw" | "srf" | "sr2" |
+                                    "orf" | "raf" | "rw2" | "dng" | "pef" | "mrw" | "mef" | "srw" |
+                                    "erf" | "kdc" | "dcs" | "dcr" | "3fr" | "iiq" | "mos" | "ari"
+                                )
+                            })
+                            .unwrap_or(false);
+
+                        if is_heic_input || is_heic_output {
+                            crate::converter::heic::convert_heic(&handle, &input, &out_path, &s, cancel_flag_for_image)
+                        } else if is_jxl_input {
+                            crate::converter::jxl::convert_jxl(&handle, &input, &out_path, &s, cancel_flag_for_image)
+                        } else if is_svg_input {
+                            crate::converter::svg::convert_svg(&handle, &input, &out_path, &s, cancel_flag_for_image)
+                        } else if is_raw_input {
+                            crate::converter::raw::convert_raw(&handle, &input, &out_path, &s, cancel_flag_for_image)
+                        } else {
+                            convert_image(&handle, &input, &out_path, &s, &fid, cancel_flag_for_image)
+                        }
                     }).await
                         .unwrap_or_else(|e| Err(format!("Task panicked: {}", e)));
 
@@ -263,6 +325,20 @@ pub async fn start_conversion(
                 },
                 MediaType::Video | MediaType::Audio => {
                     convert_media(&handle_for_task, &input_path, &output_path, &settings, &media_type, &id_for_task, input_codec).await
+                },
+                MediaType::Document => {
+                    let cancel_flag_for_doc = cancel_flag_for_task.clone();
+                    let input = input_path.clone();
+                    let out_path = output_path.clone();
+                    let s = settings.clone();
+                    let handle = handle_for_task.clone();
+
+                    let result = tokio::task::spawn_blocking(move || {
+                        crate::converter::document::convert_document(&handle, &input, &out_path, &s, cancel_flag_for_doc)
+                    }).await
+                        .unwrap_or_else(|e| Err(format!("Document task panicked: {}", e)));
+
+                    result
                 },
                 _ => Err("Unknown media type".to_string()),
             };
@@ -341,6 +417,10 @@ fn estimate_duration_ms(width: u32, height: u32, format: &str, speed: Option<&st
         "png" => 100.0,
         "jpeg" | "jpg" => 30.0,
         "gif" => 150.0,
+        "heic" | "heif" => 350.0,
+        "jxl" => 250.0,
+        "svg" | "svgz" => 200.0,
+        "nef" | "nrw" | "cr2" | "crw" | "cr3" | "arw" | "dng" | "raf" => 600.0,
         _ => 40.0,
     };
     let duration = (pixels * rate_ms) as u64;

@@ -23,11 +23,19 @@ pub struct QueuedFile {
     pub error: Option<String>,
 }
 
+pub mod format;
+
+pub use crate::types::format::{
+    FormatCategory, FormatInfo, lookup_format,
+    IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS, DOCUMENT_EXTENSIONS,
+};
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum MediaType {
     Image,
     Video,
     Audio,
+    Document,
     Unknown,
 }
 
@@ -49,6 +57,8 @@ pub struct FileMetadata {
     pub sample_rate: Option<u32>,
     #[serde(default)]
     pub channels: Option<u8>,
+    #[serde(default)]
+    pub bit_depth: Option<u8>,
     pub has_metadata: bool,
 }
 
@@ -106,6 +116,3 @@ pub enum ConversionStatus {
     Error,
 }
 
-pub static IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "webp", "avif", "gif", "bmp", "tiff", "tif"];
-pub static VIDEO_EXTENSIONS: &[&str] = &["mp4", "webm", "mkv", "mov", "avi"];
-pub static AUDIO_EXTENSIONS: &[&str] = &["mp3", "wav", "flac", "aac", "ogg", "m4a", "wma"];

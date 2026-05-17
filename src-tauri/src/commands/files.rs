@@ -64,14 +64,12 @@ pub async fn add_files(paths: Vec<String>) -> Result<Vec<QueuedFile>, String> {
             };
             let extension = extension_os.to_string_lossy().to_lowercase();
 
-            let media_type = if crate::types::IMAGE_EXTENSIONS.contains(&extension.as_str()) {
-                MediaType::Image
-            } else if crate::types::VIDEO_EXTENSIONS.contains(&extension.as_str()) {
-                MediaType::Video
-            } else if crate::types::AUDIO_EXTENSIONS.contains(&extension.as_str()) {
-                MediaType::Audio
-            } else {
-                MediaType::Unknown
+            let media_type = match crate::types::lookup_format(&extension) {
+                Some((crate::types::FormatCategory::Image, _)) => MediaType::Image,
+                Some((crate::types::FormatCategory::Video, _)) => MediaType::Video,
+                Some((crate::types::FormatCategory::Audio, _)) => MediaType::Audio,
+                Some((crate::types::FormatCategory::Document, _)) => MediaType::Document,
+                None => MediaType::Unknown,
             };
 
             if matches!(media_type, MediaType::Unknown) {
@@ -81,7 +79,7 @@ pub async fn add_files(paths: Vec<String>) -> Result<Vec<QueuedFile>, String> {
             let file_metadata = match media_type {
                 MediaType::Image => extract_image_metadata(&file_path, &extension),
                 _ => FileMetadata {
-                    format: extension,
+                    format: extension.clone(),
                     ..Default::default()
                 }
             };

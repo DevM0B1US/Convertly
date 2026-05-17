@@ -76,6 +76,20 @@ pub async fn convert_media(
         "mp4" => "h264",
         "mp4-hevc" => "hevc",
         "webm" => "vp9",
+        "avi" => "mpeg4",
+        "mkv" => "h264",
+        "mov" => "h264",
+        "flv" | "f4v" => "flv",
+        "ts" | "mts" | "m2ts" => "h264",
+        "mpg" | "mpeg" | "vob" => "mpeg2video",
+        "m4v" => "h264",
+        "3gp" | "3g2" => "h263",
+        "ogv" => "libtheora",
+        "wmv" => "msmpeg4v3",
+        "mxf" => "dnxhd",
+        "rm" | "rmvb" => "rv20",
+        "divx" => "mpeg4",
+        "swf" => "flv",
         _ => "copy",
     };
 
@@ -168,6 +182,14 @@ pub async fn convert_media(
                         _ => "libvpx-vp9".to_string(),
                     }
                 }
+                "mpeg4" => "mpeg4".to_string(),
+                "mpeg2video" => "mpeg2video".to_string(),
+                "h263" => "h263".to_string(),
+                "libtheora" => "libtheora".to_string(),
+                "msmpeg4v3" => "msmpeg4v3".to_string(),
+                "dnxhd" => "dnxhd".to_string(),
+                "rv20" => "rv20".to_string(),
+                "flv" => "flv".to_string(),
                 _ => "copy".to_string(),
             }
         };
@@ -292,6 +314,26 @@ pub async fn convert_media(
             }
         }
     } else if matches!(media_type, crate::types::MediaType::Audio) {
+        let acodec = match settings.target_format.to_lowercase().as_str() {
+            "mp3" => "libmp3lame",
+            "wav" => "pcm_s16le",
+            "flac" => "flac",
+            "aac" | "m4a" => "aac",
+            "ogg" | "oga" => "libvorbis",
+            "opus" => "libopus",
+            "wma" => "wmav2",
+            "aiff" | "aif" | "aifc" => "pcm_s16be",
+            "ac3" => "ac3",
+            "alac" => "alac",
+            "amr" => "libopencore_amrnb",
+            "mp1" => "mp1",
+            "mp2" => "mp2",
+            "au" => "pcm_s16le",
+            _ => "copy",
+        };
+        args.push("-c:a".to_string());
+        args.push(acodec.to_string());
+
         let bitrate = 32 + (settings.quality as f32 * 2.88) as u32;
         args.push("-b:a".to_string());
         args.push(format!("{}k", bitrate));

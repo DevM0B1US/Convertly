@@ -24,6 +24,11 @@ pub fn convert_image(
         "gif" => "gif",
         "bmp" => "bmp",
         "tiff" => "tiff",
+        "hdr" => "hdr",
+        "ico" => "ico",
+        "qoi" => "qoi",
+        "pnm" | "ppm" | "pgm" | "pbm" => "pnm",
+        "ff" | "farbfeld" => "ff",
         _ => return Err(format!("Unsupported target format: {}", settings.target_format)),
     };
 
@@ -133,6 +138,26 @@ pub fn convert_image(
         "tiff" => {
             img.save_with_format(&output_path, ImageFormat::Tiff)
                 .map_err(|e| format!("Failed to encode TIFF: {}", e))?;
+        }
+        "hdr" => {
+            img.save_with_format(&output_path, ImageFormat::Hdr)
+                .map_err(|e| format!("Failed to encode HDR: {}", e))?;
+        }
+        "ico" => {
+            img.save_with_format(&output_path, ImageFormat::Ico)
+                .map_err(|e| format!("Failed to encode ICO: {}", e))?;
+        }
+        "qoi" => {
+            img.save_with_format(&output_path, ImageFormat::Qoi)
+                .map_err(|e| format!("Failed to encode QOI: {}", e))?;
+        }
+        "pnm" => {
+            img.save_with_format(&output_path, ImageFormat::Pnm)
+                .map_err(|e| format!("Failed to encode PNM: {}", e))?;
+        }
+        "ff" => {
+            img.save_with_format(&output_path, ImageFormat::Farbfeld)
+                .map_err(|e| format!("Failed to encode Farbfeld: {}", e))?;
         }
         other => return Err(format!("Unsupported target format: {}", other)),
     }

@@ -6,24 +6,37 @@ interface FormatSelectorPopoverProps {
   onSelect: (format: TargetFormat) => void;
   onClose: () => void;
   currentFormat: string;
-  sourceType?: 'image' | 'video' | 'audio';
+  sourceType?: 'image' | 'video' | 'audio' | 'document';
 }
 
-type CategoryId = 'image' | 'video' | 'audio';
+type CategoryId = 'image' | 'video' | 'audio' | 'document';
 
-const IMAGE_FORMATS = ['AVIF', 'BMP', 'GIF', 'JPEG', 'JPG', 'PNG', 'TIFF', 'WEBP'];
-const VIDEO_FORMATS = ['MP4', 'WEBM', 'MKV', 'MOV', 'AVI'];
-const AUDIO_FORMATS = ['MP3', 'WAV', 'FLAC', 'OGG', 'M4A', 'AAC'];
+const IMAGE_FORMATS = [
+  'AVIF', 'BMP', 'GIF', 'HDR', 'ICO', 'JPEG', 'JPG', 'PNG', 'TIFF', 'WEBP',
+  'QOI', 'HEIC', 'FARBFELD'
+];
+const VIDEO_FORMATS = [
+  'MP4', 'WEBM', 'MKV', 'MOV', 'AVI', 'FLV', 'TS', 'MTS', 'M2TS', 'MPG', 'MPEG',
+  'VOB', 'M4V', '3GP', '3G2', 'OGV', 'WMV', 'MXF', 'RM', 'RMVB', 'DIVX', 'SWF'
+];
+const AUDIO_FORMATS = [
+  'MP3', 'WAV', 'FLAC', 'OGG', 'M4A', 'AAC', 'WMA', 'OPUS', 'AIFF', 'AC3',
+  'ALAC', 'AMR', 'MP2', 'AU'
+];
+const DOCUMENT_FORMATS = [
+  'DOCX', 'ODT', 'MD', 'HTML', 'RTF', 'CSV', 'TSV', 'JSON', 'RST', 'EPUB', 'DOCBOOK'
+];
 
 const CATEGORIES: { id: CategoryId; label: string; formats: string[] }[] = [
   { id: 'image', label: 'Image', formats: IMAGE_FORMATS },
   { id: 'video', label: 'Video', formats: VIDEO_FORMATS },
   { id: 'audio', label: 'Audio', formats: AUDIO_FORMATS },
+  { id: 'document', label: 'Document', formats: DOCUMENT_FORMATS },
 ];
 
 export const FormatSelectorPopover = ({ onSelect, onClose, currentFormat, sourceType }: FormatSelectorPopoverProps) => {
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState(sourceType ?? 'image');
+  const [activeCategory, setActiveCategory] = useState<CategoryId>(sourceType ?? 'image');
 
   const visibleCategories = sourceType
     ? CATEGORIES.filter((c) => c.id === sourceType)
@@ -55,7 +68,7 @@ export const FormatSelectorPopover = ({ onSelect, onClose, currentFormat, source
             {visibleCategories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => setActiveCategory(cat.id as 'image' | 'video' | 'audio')}
+                onClick={() => setActiveCategory(cat.id as CategoryId)}
                 className={`flex items-center justify-between px-2 py-2 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                   activeCategory === cat.id 
                     ? 'bg-primary/10 text-primary' 

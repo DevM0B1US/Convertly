@@ -16,6 +16,10 @@ const ALL_FORMATS = {
     { value: 'gif' as TargetFormat, label: 'GIF' },
     { value: 'bmp' as TargetFormat, label: 'BMP' },
     { value: 'tiff' as TargetFormat, label: 'TIFF' },
+    { value: 'hdr' as TargetFormat, label: 'HDR' },
+    { value: 'ico' as TargetFormat, label: 'ICO' },
+    { value: 'qoi' as TargetFormat, label: 'QOI' },
+    { value: 'heic' as TargetFormat, label: 'HEIC' },
   ],
   video: [
     { value: 'mp4' as TargetFormat, label: 'MP4' },
@@ -23,6 +27,15 @@ const ALL_FORMATS = {
     { value: 'avi' as TargetFormat, label: 'AVI' },
     { value: 'mkv' as TargetFormat, label: 'MKV' },
     { value: 'mov' as TargetFormat, label: 'MOV' },
+    { value: 'flv' as TargetFormat, label: 'FLV' },
+    { value: 'ts' as TargetFormat, label: 'TS' },
+    { value: 'mpg' as TargetFormat, label: 'MPG' },
+    { value: 'vob' as TargetFormat, label: 'VOB' },
+    { value: 'm4v' as TargetFormat, label: 'M4V' },
+    { value: '3gp' as TargetFormat, label: '3GP' },
+    { value: 'ogv' as TargetFormat, label: 'OGV' },
+    { value: 'wmv' as TargetFormat, label: 'WMV' },
+    { value: 'mxf' as TargetFormat, label: 'MXF' },
   ],
   audio: [
     { value: 'mp3' as TargetFormat, label: 'MP3' },
@@ -31,6 +44,27 @@ const ALL_FORMATS = {
     { value: 'aac' as TargetFormat, label: 'AAC' },
     { value: 'ogg' as TargetFormat, label: 'OGG' },
     { value: 'm4a' as TargetFormat, label: 'M4A' },
+    { value: 'wma' as TargetFormat, label: 'WMA' },
+    { value: 'opus' as TargetFormat, label: 'OPUS' },
+    { value: 'aiff' as TargetFormat, label: 'AIFF' },
+    { value: 'ac3' as TargetFormat, label: 'AC3' },
+    { value: 'alac' as TargetFormat, label: 'ALAC' },
+    { value: 'amr' as TargetFormat, label: 'AMR' },
+    { value: 'mp2' as TargetFormat, label: 'MP2' },
+    { value: 'au' as TargetFormat, label: 'AU' },
+  ],
+  document: [
+    { value: 'docx' as TargetFormat, label: 'DOCX' },
+    { value: 'odt' as TargetFormat, label: 'ODT' },
+    { value: 'md' as TargetFormat, label: 'MD' },
+    { value: 'html' as TargetFormat, label: 'HTML' },
+    { value: 'rtf' as TargetFormat, label: 'RTF' },
+    { value: 'csv' as TargetFormat, label: 'CSV' },
+    { value: 'tsv' as TargetFormat, label: 'TSV' },
+    { value: 'json' as TargetFormat, label: 'JSON' },
+    { value: 'rst' as TargetFormat, label: 'RST' },
+    { value: 'epub' as TargetFormat, label: 'EPUB' },
+    { value: 'docbook' as TargetFormat, label: 'DOCBOOK' },
   ],
 };
 
@@ -117,6 +151,8 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
         icon = <Film size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
       } else if (allTypes[0] === "Audio") {
         icon = <Music size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
+      } else if (allTypes[0] === "Document") {
+        icon = <Files size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
       }
     }
 
@@ -128,12 +164,13 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
 
   const availableFormats = useMemo(() => {
     if (mediaTypes.size === 0 || mediaTypes.has("Unknown")) {
-      return [...ALL_FORMATS.image, ...ALL_FORMATS.video, ...ALL_FORMATS.audio];
+      return [...ALL_FORMATS.image, ...ALL_FORMATS.video, ...ALL_FORMATS.audio, ...ALL_FORMATS.document];
     }
     const formats: { value: TargetFormat; label: string }[] = [];
     if (mediaTypes.has("Image")) formats.push(...ALL_FORMATS.image);
     if (mediaTypes.has("Video")) formats.push(...ALL_FORMATS.video);
     if (mediaTypes.has("Audio")) formats.push(...ALL_FORMATS.audio);
+    if (mediaTypes.has("Document")) formats.push(...ALL_FORMATS.document);
     return formats;
   }, [mediaTypes]);
 
@@ -150,13 +187,15 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
     switch (type) {
       case 'video': return <Film size={28} />;
       case 'audio': return <Music size={28} />;
+      case 'document': return <Files size={28} />;
       default: return <ImageIcon size={28} />;
     }
   };
 
   const currentType = ALL_FORMATS.image.find((f) => f.value === currentFormat?.value) ? 'image'
     : ALL_FORMATS.video.find((f) => f.value === currentFormat?.value) ? 'video'
-    : 'audio';
+    : ALL_FORMATS.audio.find((f) => f.value === currentFormat?.value) ? 'audio'
+    : 'document';
 
   return (
     <div 
@@ -249,8 +288,8 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
                   sourceType={(() => {
                     if (allTypes.length !== 1) return undefined;
                     const type = allTypes[0].toLowerCase();
-                    if (type === 'image' || type === 'video' || type === 'audio') {
-                      return type as 'image' | 'video' | 'audio';
+                    if (type === 'image' || type === 'video' || type === 'audio' || type === 'document') {
+                      return type as 'image' | 'video' | 'audio' | 'document';
                     }
                     return undefined;
                   })()}
