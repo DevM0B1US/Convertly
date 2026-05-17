@@ -118,10 +118,10 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   }, [isPopoverOpen]);
 
   return (
-    <div className="relative bg-surface border border-border rounded-lg transition-colors">
+    <div className="relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-all duration-200">
       <div className="flex items-center gap-4 px-4 pt-4 pb-3">
         {/* File Type Icon / Preview */}
-        <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 bg-surface/5 shadow-sm">
+        <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 shadow-sm">
           {isImage && item?.path && !imageError ? (
             <img 
               src={convertFileSrc(item.path)} 

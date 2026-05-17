@@ -51,6 +51,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-gutter: stable;
 }
 
 * {
@@ -95,8 +96,14 @@ button, select, input, textarea, a, [role="button"], .cursor-pointer {
 }
 
 .animate-queue-slide-in {
-  animation: queueItemSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
+  opacity: 1; /* Default to visible immediately if user prefers reduced motion */
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-queue-slide-in {
+    animation: queueItemSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+  }
 }
 
 /* Accessibility focus-visible styles */
