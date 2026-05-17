@@ -40,8 +40,13 @@ fn resolve_output_dir(out_dir: &Path, source_dir: Option<&str>, format: Option<&
     Ok(base_path)
 }
 
+pub struct ConversionTask {
+    pub handle: tokio::task::JoinHandle<()>,
+    pub cancel_flag: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
+
 pub struct ActiveConversions {
-    pub tasks: std::sync::Mutex<std::collections::HashMap<String, tokio::task::JoinHandle<()>>>,
+    pub tasks: std::sync::Mutex<std::collections::HashMap<String, ConversionTask>>,
 }
 
 #[tauri::command]
@@ -131,13 +136,21 @@ pub async fn start_conversion(
         };
         reserved_paths.insert(output_path.clone());
 
-        let permit = match semaphore.clone().acquire_owned().await {
-            Ok(p) => p,
-            Err(_) => return Err("Failed to acquire semaphore permit: closed".to_string()),
-        };
-
+        let cancel_flag = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let cancel_flag_for_task = cancel_flag.clone();
+        let semaphore_clone = semaphore.clone();
+        let input_codec = item.metadata.codec.clone();
         let task = tokio::spawn(async move {
-            let _permit = permit;
+            let _permit = match semaphore_clone.acquire_owned().await {
+                Ok(p) => p,
+                Err(_) => {
+                    let _ = handle_for_task.emit("conversion:error", serde_json::json!({
+                        "id": id_for_task,
+                        "error": "Failed to acquire concurrency permit".to_string(),
+                    }));
+                    return;
+                }
+            };
             let _ = handle_for_task.emit("conversion:progress", serde_json::json!({
                 "id": id_for_task,
                 "percent": 0.0,
@@ -212,8 +225,9 @@ pub async fn start_conversion(
                         ticker,
                     };
 
+                    let cancel_flag_for_image = cancel_flag_for_task.clone();
                     let result = tokio::task::spawn_blocking(move || {
-                        convert_image(&handle, &input, &out_path, &s, &fid)
+                        convert_image(&handle, &input, &out_path, &s, &fid, cancel_flag_for_image)
                     }).await
                         .unwrap_or_else(|e| Err(format!("Task panicked: {}", e)));
 
@@ -223,7 +237,7 @@ pub async fn start_conversion(
                     result
                 },
                 MediaType::Video | MediaType::Audio => {
-                    convert_media(&handle_for_task, &input_path, &output_path, &settings, &media_type, &id_for_task).await
+                    convert_media(&handle_for_task, &input_path, &output_path, &settings, &media_type, &id_for_task, input_codec).await
                 },
                 _ => Err("Unknown media type".to_string()),
             };
@@ -262,7 +276,10 @@ pub async fn start_conversion(
         // Register the task handle with ActiveConversions for cancellation
         if let Some(s) = app_handle.try_state::<ActiveConversions>() {
             if let Ok(mut tasks) = s.tasks.lock() {
-                tasks.insert(id, task);
+                tasks.insert(id, ConversionTask {
+                    handle: task,
+                    cancel_flag,
+                });
             }
         }
     }
@@ -277,19 +294,15 @@ pub async fn cancel_conversion(
 ) -> Result<(), String> {
     if let Some(state) = app_handle.try_state::<ActiveConversions>() {
         if let Ok(mut tasks) = state.tasks.lock() {
-            if let Some(handle) = tasks.remove(&id) {
-                handle.abort();
+            if let Some(task) = tasks.remove(&id) {
+                task.cancel_flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                task.handle.abort();
             }
         }
     }
     Ok(())
 }
 
-#[tauri::command]
-pub async fn pause_conversion(id: String) -> Result<(), String> {
-    let _ = id;
-    Ok(())
-}
 
 fn estimate_duration_ms(width: u32, height: u32, format: &str, speed: Option<&str>) -> u64 {
     let pixels = (width as f64 * height as f64) / 1_000_000.0; // million pixels

@@ -14,6 +14,7 @@ pub fn convert_image(
     output_path: &Path,
     settings: &ConversionSettings,
     _file_id: &str,
+    cancel_flag: std::sync::Arc<std::sync::atomic::AtomicBool>,
 ) -> Result<PathBuf, String> {
     let format = match settings.target_format.as_str() {
         "webp" => "webp",
@@ -26,6 +27,10 @@ pub fn convert_image(
         _ => return Err(format!("Unsupported target format: {}", settings.target_format)),
     };
 
+    if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+        return Err("Cancelled".to_string());
+    }
+
     let reader = ImageReader::open(input_path)
         .map_err(|e| format!("Failed to open image: {}", e))?;
 
@@ -33,6 +38,10 @@ pub fn convert_image(
         .map_err(|e| format!("Failed to guess format: {}", e))?
         .decode()
         .map_err(|e| format!("Failed to decode image: {}", e))?;
+
+    if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+        return Err("Cancelled".to_string());
+    }
 
     if let Some(resize) = &settings.resize {
         if resize.enabled {
@@ -66,13 +75,17 @@ pub fn convert_image(
         }
     }
 
+    if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+        return Err("Cancelled".to_string());
+    }
+
     let quality = settings.quality.clamp(1, 100);
 
     match format {
         "jpeg" => {
             let file = File::create(&output_path)
                 .map_err(|e| format!("Failed to create output file: {}", e))?;
-            let rgb = img.to_rgb8();
+            let rgb = img.into_rgb8();
             JpegEncoder::new_with_quality(file, quality)
                 .encode(rgb.as_raw(), rgb.width(), rgb.height(), ExtendedColorType::Rgb8)
                 .map_err(|e| format!("Failed to encode JPEG: {}", e))?;
@@ -80,7 +93,7 @@ pub fn convert_image(
         "avif" => {
             let file = File::create(&output_path)
                 .map_err(|e| format!("Failed to create output file: {}", e))?;
-            let rgba = img.to_rgba8();
+            let rgba = img.into_rgba8();
             let avif_speed = match settings.speed.as_deref() {
                 Some("ultrafast") => 9,
                 Some("veryslow") => 3,
@@ -91,7 +104,7 @@ pub fn convert_image(
                 .map_err(|e| format!("Failed to encode AVIF: {}", e))?;
         }
         "webp" => {
-            let rgba = img.to_rgba8();
+            let rgba = img.into_rgba8();
             let encoder = WebpEncoder::from_rgba(rgba.as_raw(), rgba.width(), rgba.height());
             let mut config = WebPConfig::new().map_err(|_| "Failed to create WebP config".to_string())?;
             config.quality = quality as f32;

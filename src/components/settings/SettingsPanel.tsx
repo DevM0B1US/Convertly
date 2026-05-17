@@ -74,15 +74,26 @@ export const SettingsPanel = () => {
 
   const handleConvertAll = async () => {
     setIsConverting(true);
-    const shouldResetAll = items.every(item => item.status === "done");
 
-    items.forEach(item => {
+    // Filter to only convert items that are not currently converting
+    const eligibleItems = items.filter(
+      (item) => item.status !== "converting"
+    );
+
+    if (eligibleItems.length === 0) {
+      setIsConverting(false);
+      return;
+    }
+
+    const shouldResetAll = eligibleItems.every(item => item.status === "done");
+
+    eligibleItems.forEach(item => {
       if (shouldResetAll || item.status !== "done") {
         updateItem(item.id, { status: "queued", progress: 0, error: undefined });
       }
     });
 
-    const itemsToConvert = items
+    const itemsToConvert = eligibleItems
       .filter(item => shouldResetAll || item.status !== "done")
       .map(item => ({
         ...item,
@@ -93,7 +104,8 @@ export const SettingsPanel = () => {
           stripMetadata: globalSettings.globalStripMetadata,
           fps: globalSettings.globalFps,
           audioChannels: globalSettings.globalAudioChannels,
-          speed: globalSettings.globalSpeed
+          speed: globalSettings.globalSpeed,
+          hwAccel: globalSettings.globalHwAccel
         }
       }));
 
@@ -352,6 +364,36 @@ export const SettingsPanel = () => {
               </div>
             </div>
 
+            {/* Hardware Acceleration Selector */}
+            <div>
+              <div className="flex items-center gap-1 mb-1.5">
+                <label className="text-xs font-semibold text-muted">Hardware Acceleration</label>
+                <InfoTooltip content="Choose a GPU-accelerated encoder. 'Auto' will automatically select the best hardware acceleration available for your device." />
+              </div>
+              <div className="relative">
+                <select 
+                  value={globalSettings.globalHwAccel ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "none" || val === "nvenc" || val === "qsv" || val === "vaapi" || val === "videotoolbox") {
+                      globalSettings.setGlobalHwAccel(val);
+                    } else {
+                      globalSettings.setGlobalHwAccel(null);
+                    }
+                  }}
+                  className="w-full appearance-none bg-muted/5 border border-border rounded-lg py-2 pl-3 pr-10 text-sm font-medium text-text focus:outline-none focus:border-primary transition-all cursor-pointer"
+                >
+                  <option value="" className="bg-surface text-text">Auto-Detect (Best Available)</option>
+                  <option value="none" className="bg-surface text-text">Disabled (CPU Only)</option>
+                  <option value="nvenc" className="bg-surface text-text">NVIDIA NVENC</option>
+                  <option value="videotoolbox" className="bg-surface text-text">Apple VideoToolbox</option>
+                  <option value="qsv" className="bg-surface text-text">Intel QuickSync (QSV)</option>
+                  <option value="vaapi" className="bg-surface text-text">AMD/Intel VAAPI (Linux)</option>
+                </select>
+                <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
+              </div>
+            </div>
+
 
           </div>
         )}
@@ -408,7 +450,7 @@ export const SettingsPanel = () => {
         <button 
           onClick={handleConvertAll}
           disabled={items.length === 0 || (!hasItemsToConvert && !allItemsDone) || isConverting}
-          className="w-full py-3 bg-accent hover:bg-accent/90 active:scale-[0.98] text-white rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex flex-col items-center justify-center shadow-md cursor-pointer"
+          className="w-full py-3 bg-primary hover:bg-primary-hover active:scale-[0.98] text-white rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex flex-col items-center justify-center shadow-md cursor-pointer"
         >
           <span className="text-lg font-bold">
             {allItemsDone ? "Reconvert All" : "Convert All"}

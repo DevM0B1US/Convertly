@@ -23,7 +23,6 @@ pub fn run() {
             commands::files::add_files,
             commands::convert::start_conversion,
             commands::convert::cancel_conversion,
-            commands::convert::pause_conversion,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

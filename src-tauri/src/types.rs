@@ -66,6 +66,8 @@ pub struct ConversionSettings {
     pub audio_channels: Option<u8>,
     #[serde(default)]
     pub speed: Option<String>,
+    #[serde(default)]
+    pub hw_accel: Option<String>,
 }
 
 impl Default for ConversionSettings {
@@ -78,6 +80,7 @@ impl Default for ConversionSettings {
             fps: None,
             audio_channels: None,
             speed: None,
+            hw_accel: None,
         }
     }
 }

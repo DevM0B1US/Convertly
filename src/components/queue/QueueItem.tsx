@@ -28,6 +28,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const globalFps = useSettingsStore(state => state.globalFps);
   const globalAudioChannels = useSettingsStore(state => state.globalAudioChannels);
   const globalSpeed = useSettingsStore(state => state.globalSpeed);
+  const globalHwAccel = useSettingsStore(state => state.globalHwAccel);
   const maxConcurrent = useSettingsStore(state => state.maxConcurrent);
   
   const item = useQueueStore(state => state.items.find(i => i.id === id));
@@ -40,10 +41,9 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const [imageLoaded, setImageLoaded] = useState(false);
   // Limit slide-in animation to the first screenful of items (index <= 15)
   // to avoid setting thousands of timers and delaying renders for long lists
-  const [shouldAnimate, setShouldAnimate] = useState(() => index <= 15);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
 
   useEffect(() => {
-    if (index > 15) return;
     const delay = index * 40;
     const timer = setTimeout(() => {
       setShouldAnimate(false);
@@ -107,6 +107,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
       fps: item.settings?.fps !== undefined ? item.settings.fps : globalFps,
       audioChannels: item.settings?.audioChannels !== undefined ? item.settings.audioChannels : globalAudioChannels,
       speed: item.settings?.speed !== undefined ? item.settings.speed : globalSpeed,
+      hwAccel: item.settings?.hwAccel !== undefined ? item.settings.hwAccel : globalHwAccel,
     };
     await startConversion([{ ...item, settings }], outputDir || undefined, maxConcurrent);
   };
@@ -232,7 +233,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
           {status === "queued" && (
             <button 
               onClick={handleConvert}
-              className="h-8 px-3 rounded-lg bg-accent text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+              className="h-8 px-3 rounded-lg bg-primary text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 hover:bg-primary-hover active:scale-95 cursor-pointer"
             >
               Convert
             </button>
@@ -262,8 +263,8 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
               onClick={() => setIsPopoverOpen(!isPopoverOpen)}
               className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg border text-xs font-bold transition-all duration-200 cursor-pointer ${
                 isPopoverOpen 
-                  ? 'border-accent bg-accent/15 text-accent shadow-sm' 
-                  : 'border-border bg-muted/5 text-text hover:border-accent/40 hover:bg-accent/5 hover:text-accent'
+                  ? 'border-primary bg-primary/15 text-primary shadow-sm' 
+                  : 'border-border bg-muted/5 text-text hover:border-primary/40 hover:bg-primary/5 hover:text-primary'
               }`}
             >
                <span>{targetFormat}</span>

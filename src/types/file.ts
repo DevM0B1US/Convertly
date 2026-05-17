@@ -24,6 +24,7 @@ export interface ConversionSettings {
   fps?: number | null; // null = Keep Original
   audioChannels?: number | null; // null = Keep Original, 1 = Mono, 2 = Stereo
   speed?: "ultrafast" | "medium" | "veryslow" | null; // null = Medium
+  hwAccel?: "none" | "nvenc" | "qsv" | "vaapi" | "videotoolbox" | null;
 }
 
 export interface FileMetadata {
