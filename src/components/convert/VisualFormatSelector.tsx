@@ -240,7 +240,14 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
                   }}
                   onClose={() => setIsOpen(false)}
                   currentFormat={globalFormat}
-                  sourceType={allTypes.length === 1 ? (allTypes[0].toLowerCase() as 'image' | 'video' | 'audio') : undefined}
+                  sourceType={(() => {
+                    if (allTypes.length !== 1) return undefined;
+                    const type = allTypes[0].toLowerCase();
+                    if (type === 'image' || type === 'video' || type === 'audio') {
+                      return type as 'image' | 'video' | 'audio';
+                    }
+                    return undefined;
+                  })()}
                 />
               </div>
             )}

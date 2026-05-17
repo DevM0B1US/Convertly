@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { TitleBar } from "./components/layout/TitleBar";
 import { StatusBar } from "./components/layout/StatusBar";
 import { SplitPane } from "./components/layout/SplitPane";
@@ -10,7 +10,19 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { useSettingsStore } from "./stores/settingsStore";
 import { downloadDir, join } from "@tauri-apps/api/path";
 
-function App() {
+const Content = memo(({ activeView }: { activeView: string }) => {
+  switch (activeView) {
+    case "converter":
+      return <SplitPane />;
+    case "history":
+      return <HistoryPanel />;
+    default:
+      return <SplitPane />;
+  }
+});
+Content.displayName = "Content";
+
+export function App() {
   const isDark = useAppStore((state) => state.isDark);
   const activeView = useAppStore((state) => state.activeView);
   const { outputDir, setOutputDir } = useSettingsStore();
@@ -31,6 +43,7 @@ function App() {
     };
     initDefaultDir();
   }, []);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -39,29 +52,16 @@ function App() {
     }
   }, [isDark]);
 
-  const renderContent = () => {
-    switch (activeView) {
-      case "converter":
-        return <SplitPane />;
-      case "history":
-        return <HistoryPanel />;
-      default:
-        return <SplitPane />;
-    }
-  };
-
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-text transition-colors duration-300">
       <TitleBar />
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
         <div className="flex-1 overflow-hidden">
-          {renderContent()}
+          <Content activeView={activeView} />
         </div>
       </div>
       <StatusBar />
     </div>
   );
 }
-
-export default App;

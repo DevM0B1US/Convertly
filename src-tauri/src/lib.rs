@@ -2,6 +2,7 @@ pub mod types;
 pub mod metadata;
 pub mod converter;
 pub mod commands;
+pub mod utils;
 
 use commands::convert::ActiveConversions;
 use std::collections::HashMap;
@@ -20,8 +21,6 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::files::add_files,
-            commands::files::remove_file,
-            commands::files::clear_queue,
             commands::convert::start_conversion,
             commands::convert::cancel_conversion,
             commands::convert::pause_conversion,

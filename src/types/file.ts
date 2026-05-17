@@ -1,3 +1,7 @@
+export const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'tiff', 'tif'];
+export const VIDEO_EXTENSIONS = ['mp4', 'mov', 'webm', 'avi', 'mkv'];
+export const AUDIO_EXTENSIONS = ['mp3', 'wav', 'flac', 'ogg', 'm4a', 'aac', 'wma'];
+
 export type TargetFormat = 
   | "webp" | "avif" | "png" | "jpeg" | "gif" | "bmp" | "tiff"
   | "mp4" | "mp4-hevc" | "webm" | "avi" | "mkv" | "mov"

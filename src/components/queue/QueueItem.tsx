@@ -1,7 +1,7 @@
 import { Film, Music, Image as ImageIcon, FileText, X, ChevronDown, RefreshCw } from "lucide-react";
 import { useQueueStore } from "../../stores/queueStore";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { TargetFormat } from "../../types/file";
+import { TargetFormat, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS } from "../../types/file";
 import { cancelConversion, startConversion } from "../../lib/ipc";
 import { useState, useRef, useEffect, memo, useMemo } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
@@ -31,7 +31,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const maxConcurrent = useSettingsStore(state => state.maxConcurrent);
   
   const item = useQueueStore(state => state.items.find(i => i.id === id));
-  const targetFormat = (item?.settings?.targetFormat || globalFormat).toUpperCase();
+  const targetFormat = (item?.settings?.targetFormat ?? globalFormat).toUpperCase();
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -44,7 +44,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
       setShouldAnimate(false);
     }, delay + 300);
     return () => clearTimeout(timer);
-  }, []); // Run exactly once on initial mount!
+  }, [index]);
 
   useEffect(() => {
     setImageError(false);
@@ -53,9 +53,9 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const ext = name.split('.').pop()?.toLowerCase() || '';
   const sourceFormat = ext.toUpperCase();
 
-  const isVideo = ['mp4', 'mov', 'webm', 'avi', 'mkv'].includes(ext);
-  const isAudio = ['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext);
-  const isImage = ['png', 'jpg', 'jpeg', 'webp', 'avif', 'gif'].includes(ext);
+  const isVideo = VIDEO_EXTENSIONS.includes(ext);
+  const isAudio = AUDIO_EXTENSIONS.includes(ext);
+  const isImage = IMAGE_EXTENSIONS.includes(ext);
 
   let Icon = FileText;
   if (isVideo) Icon = Film;
@@ -75,7 +75,11 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   }, [isImage, item?.path, imageError]);
 
   const handleRemove = () => {
-    if (status === "converting" || status === "paused") cancelConversion(id);
+    if (status === "converting" || status === "paused") {
+      cancelConversion(id).catch((err) => {
+        console.error("Failed to cancel conversion:", err);
+      });
+    }
     removeFile(id);
   };
 

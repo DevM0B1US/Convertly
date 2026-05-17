@@ -48,14 +48,24 @@ pub async fn add_files(paths: Vec<String>) -> Result<Vec<QueuedFile>, String> {
                 Err(_) => continue,
             };
 
-            let file_name = file_path.file_name().unwrap_or_default().to_string_lossy().to_string();
-            let extension = file_path.extension().unwrap_or_default().to_string_lossy().to_lowercase();
+            let Some(file_name_os) = file_path.file_name() else {
+                continue;
+            };
+            let file_name = file_name_os.to_string_lossy().to_string();
 
-            let media_type = match extension.as_str() {
-                "jpg" | "jpeg" | "png" | "webp" | "avif" | "gif" | "bmp" | "tiff" | "tif" => MediaType::Image,
-                "mp4" | "webm" | "mkv" | "mov" | "avi" => MediaType::Video,
-                "mp3" | "wav" | "flac" | "aac" | "ogg" | "m4a" | "wma" => MediaType::Audio,
-                _ => MediaType::Unknown,
+            let Some(extension_os) = file_path.extension() else {
+                continue;
+            };
+            let extension = extension_os.to_string_lossy().to_lowercase();
+
+            let media_type = if crate::types::IMAGE_EXTENSIONS.contains(&extension.as_str()) {
+                MediaType::Image
+            } else if crate::types::VIDEO_EXTENSIONS.contains(&extension.as_str()) {
+                MediaType::Video
+            } else if crate::types::AUDIO_EXTENSIONS.contains(&extension.as_str()) {
+                MediaType::Audio
+            } else {
+                MediaType::Unknown
             };
 
             if matches!(media_type, MediaType::Unknown) {
@@ -89,15 +99,4 @@ pub async fn add_files(paths: Vec<String>) -> Result<Vec<QueuedFile>, String> {
     }
 
     Ok(queued_files)
-}
-
-#[tauri::command]
-pub async fn remove_file(id: String) -> Result<(), String> {
-    let _ = id;
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn clear_queue() -> Result<(), String> {
-    Ok(())
 }

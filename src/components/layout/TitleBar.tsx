@@ -14,10 +14,10 @@ export const TitleBar = () => {
         }}
         className="flex-1 flex items-center gap-2 px-3 h-full cursor-grab active:cursor-grabbing select-none"
       >
-        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center p-[3px] shadow-sm shrink-0 select-none" style={{ pointerEvents: "none" }}>
-          <img src="/logo.avif" alt="Convertly" className="w-full h-full object-contain" style={{ pointerEvents: "none" }} />
+        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center p-[3px] shadow-sm shrink-0 select-none pointer-events-none">
+          <img src="/logo.avif" alt="Convertly" className="w-full h-full object-contain pointer-events-none" />
         </div>
-        <span className="font-medium text-sm" style={{ pointerEvents: "none" }}>
+        <span className="font-medium text-sm pointer-events-none">
           Convertly - File Converter
         </span>
       </div>

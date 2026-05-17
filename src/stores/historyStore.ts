@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface HistoryEntry {
   id: string;
@@ -17,16 +18,16 @@ interface HistoryState {
   clearHistory: () => void;
 }
 
-export const useHistoryStore = create<HistoryState>((set) => ({
-  entries: JSON.parse(localStorage.getItem("convertly-history") || "[]"),
-  addEntry: (entry) =>
-    set((state) => {
-      const entries = [entry, ...state.entries].slice(0, 200);
-      localStorage.setItem("convertly-history", JSON.stringify(entries));
-      return { entries };
+export const useHistoryStore = create<HistoryState>()(
+  persist(
+    (set) => ({
+      entries: [],
+      addEntry: (entry) =>
+        set((state) => ({
+          entries: [entry, ...state.entries].slice(0, 200),
+        })),
+      clearHistory: () => set({ entries: [] }),
     }),
-  clearHistory: () => {
-    localStorage.setItem("convertly-history", "[]");
-    set({ entries: [] });
-  },
-}));
+    { name: "convertly-history" }
+  )
+);

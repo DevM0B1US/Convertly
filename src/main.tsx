@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import { App } from "./App";
 import "./styles/globals.css";
 
 // Disable default browser right-click context menu to enforce a native app feel

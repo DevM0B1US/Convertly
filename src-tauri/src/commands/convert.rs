@@ -44,43 +44,35 @@ pub async fn start_conversion(
         let id_for_task = id.clone();
 
         let input_path = Path::new(&item.path).to_path_buf();
-        let out_dir_path = if let Some(ref dir) = out_dir_base_clone {
-            if let Some(ref src_dir) = item.source_dir {
-                if let Some(cached) = resolved_dirs.get(src_dir) {
-                    cached.clone()
+        let base_dir = match out_dir_base_clone {
+            Some(dir) => dir,
+            None => {
+                if let Ok(downloads) = handle_for_task.path().download_dir() {
+                    downloads.join("Convertly")
                 } else {
-                    let resolved = resolve_output_dir(dir, Some(src_dir));
-                    resolved_dirs.insert(src_dir.clone(), resolved.clone());
-                    resolved
+                    input_path.parent().unwrap_or(Path::new("")).to_path_buf()
                 }
+            }
+        };
+
+        let out_dir_path = if let Some(ref src_dir) = item.source_dir {
+            if let Some(cached) = resolved_dirs.get(src_dir) {
+                cached.clone()
             } else {
-                resolve_output_dir(dir, None)
+                let resolved = resolve_output_dir(&base_dir, Some(src_dir));
+                resolved_dirs.insert(src_dir.clone(), resolved.clone());
+                resolved
             }
         } else {
-            let default_base = if let Ok(downloads) = handle_for_task.path().download_dir() {
-                downloads.join("Convertly")
-            } else {
-                input_path.parent().unwrap_or(Path::new("")).to_path_buf()
-            };
-
-            if let Some(ref src_dir) = item.source_dir {
-                if let Some(cached) = resolved_dirs.get(src_dir) {
-                    cached.clone()
-                } else {
-                    let resolved = resolve_output_dir(&default_base, Some(src_dir));
-                    resolved_dirs.insert(src_dir.clone(), resolved.clone());
-                    resolved
-                }
-            } else {
-                resolve_output_dir(&default_base, None)
-            }
+            resolve_output_dir(&base_dir, None)
         };
 
         let settings = item.settings.unwrap_or_default();
         let media_type = item.media_type.clone();
-        let permit = semaphore.clone().acquire_owned().await.unwrap_or_else(|_| {
-            panic!("Semaphore closed unexpectedly");
-        });
+        let permit = match semaphore.clone().acquire_owned().await {
+            Ok(p) => p,
+            Err(_) => return Err("Failed to acquire semaphore permit: closed".to_string()),
+        };
 
         let task = tokio::spawn(async move {
             let _permit = permit;
@@ -106,7 +98,12 @@ pub async fn start_conversion(
                     // Instantly inspect image headers for dimensions to estimate encoding time
                     let (width, height) = match image::image_dimensions(&input) {
                         Ok((w, h)) => (w, h),
-                        _ => (1920, 1080),
+                        _ => {
+                            let size = std::fs::metadata(&input).map(|m| m.len()).unwrap_or(1_000_000);
+                            let pixel_count = size.max(10_000);
+                            let side = (pixel_count as f64).sqrt() as u32;
+                            (side, side)
+                        }
                     };
 
                     let format = s.target_format.clone();
@@ -139,14 +136,29 @@ pub async fn start_conversion(
                         }
                     });
 
+                    struct ProgressGuard {
+                        done: std::sync::Arc<std::sync::atomic::AtomicBool>,
+                        ticker: tokio::task::JoinHandle<()>,
+                    }
+                    impl Drop for ProgressGuard {
+                        fn drop(&mut self) {
+                            self.done.store(true, std::sync::atomic::Ordering::Relaxed);
+                            self.ticker.abort();
+                        }
+                    }
+
+                    let guard = ProgressGuard {
+                        done: progress_done.clone(),
+                        ticker,
+                    };
+
                     let result = tokio::task::spawn_blocking(move || {
                         convert_image(&handle, &input, &out, &s, &fid)
                     }).await
                         .unwrap_or_else(|e| Err(format!("Task panicked: {}", e)));
 
-                    // Stop the progress ticker and clean up
-                    progress_done.store(true, std::sync::atomic::Ordering::Relaxed);
-                    let _ = ticker.await;
+                    // Explicitly drop guard here (or let it go out of scope)
+                    drop(guard);
 
                     result
                 },

@@ -1,20 +1,18 @@
 import { QueueItem } from "../queue/QueueItem";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { useQueueStore } from "../../stores/queueStore";
-import { useConversion } from "../../hooks/useConversion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { addFiles, cancelConversion } from "../../lib/ipc";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { GripVertical, Trash2 } from "lucide-react";
 import { VisualFormatSelector } from "../convert/VisualFormatSelector";
+import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS } from "../../types/file";
 
 export const SplitPane = () => {
   const items = useQueueStore((state) => state.items);
   const addFilesToQueue = useQueueStore((state) => state.addFiles);
   const reorderQueue = useQueueStore((state) => state.reorder);
   const clearAll = useQueueStore((state) => state.clearAll);
-  
-  useConversion();
 
   const handleBrowse = async () => {
     try {
@@ -22,7 +20,7 @@ export const SplitPane = () => {
         multiple: true,
         filters: [{
           name: 'Media',
-          extensions: ['jpg', 'jpeg', 'png', 'webp', 'avif', 'gif', 'bmp', 'tiff', 'mp4', 'webm', 'mkv', 'mov', 'avi', 'mp3', 'wav', 'flac']
+          extensions: [...IMAGE_EXTENSIONS, ...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS]
         }]
       });
       
@@ -38,7 +36,7 @@ export const SplitPane = () => {
     }
   };
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     reorderQueue(result.source.index, result.destination.index);
   };
@@ -46,7 +44,9 @@ export const SplitPane = () => {
   const handleClearAll = () => {
     items.forEach((item) => {
       if (item.status === "converting" || item.status === "paused") {
-        cancelConversion(item.id);
+        cancelConversion(item.id).catch((err) => {
+          console.error("Failed to cancel conversion on clear queue:", err);
+        });
       }
     });
     clearAll();

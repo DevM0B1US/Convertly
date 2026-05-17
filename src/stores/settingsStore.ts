@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { TargetFormat, ResizeConfig, ConversionSettings } from "../types/file";
+import { TargetFormat, ResizeConfig } from "../types/file";
 
 interface SettingsState {
   globalFormat: TargetFormat;
@@ -10,7 +10,6 @@ interface SettingsState {
   globalFps: number | null; // null = Keep Original
   globalAudioChannels: number | null; // null = Keep Original, 1 = Mono, 2 = Stereo
   globalSpeed: "ultrafast" | "medium" | "veryslow" | null; // null = Medium
-  perFileOverrides: Record<string, Partial<ConversionSettings>>;
   outputDir: string | null; // null = same as source
   maxConcurrent: number; // 1-4, default 2
   
@@ -21,8 +20,6 @@ interface SettingsState {
   setGlobalFps: (fps: number | null) => void;
   setGlobalAudioChannels: (channels: number | null) => void;
   setGlobalSpeed: (speed: "ultrafast" | "medium" | "veryslow" | null) => void;
-  setFileOverride: (id: string, settings: Partial<ConversionSettings>) => void;
-  removeFileOverride: (id: string) => void;
   setOutputDir: (dir: string | null) => void;
   setMaxConcurrent: (max: number) => void;
 }
@@ -37,7 +34,6 @@ export const useSettingsStore = create<SettingsState>()(
       globalFps: null,
       globalAudioChannels: null,
       globalSpeed: null,
-      perFileOverrides: {},
       outputDir: null,
       maxConcurrent: 2,
 
@@ -48,19 +44,6 @@ export const useSettingsStore = create<SettingsState>()(
       setGlobalFps: (fps) => set({ globalFps: fps }),
       setGlobalAudioChannels: (channels) => set({ globalAudioChannels: channels }),
       setGlobalSpeed: (speed) => set({ globalSpeed: speed }),
-      setFileOverride: (id, settings) =>
-        set((state) => ({
-          perFileOverrides: {
-            ...state.perFileOverrides,
-            [id]: { ...state.perFileOverrides[id], ...settings },
-          },
-        })),
-      removeFileOverride: (id) =>
-        set((state) => {
-          const overrides = { ...state.perFileOverrides };
-          delete overrides[id];
-          return { perFileOverrides: overrides };
-        }),
       setOutputDir: (dir) => set({ outputDir: dir }),
       setMaxConcurrent: (max) => set({ maxConcurrent: max }),
     }),

@@ -8,57 +8,93 @@ export const useConversion = () => {
   const addHistoryEntry = useHistoryStore((state) => state.addEntry);
 
   useEffect(() => {
-    const unlistenProgress = listen<{id: string, percent: number}>("conversion:progress", (event) => {
-      const { id, percent } = event.payload;
-      updateItem(id, { 
-        status: percent === 100 ? "done" : "converting", 
-        progress: percent 
+    let active = true;
+    let unlistenProgress: (() => void) | null = null;
+    let unlistenComplete: (() => void) | null = null;
+    let unlistenError: (() => void) | null = null;
+
+    const setupListeners = async () => {
+      const uProgress = await listen<{ id: string; percent: number }>(
+        "conversion:progress",
+        (event) => {
+          if (active) {
+            // Cap ticker progress at 99.9 to ensure it never prematurely displays 100% in UI
+            const percent = Math.min(Math.max(event.payload.percent, 0), 99.9);
+            updateItem(event.payload.id, { progress: percent });
+          }
+        }
+      );
+      if (!active) {
+        uProgress();
+        return;
+      }
+      unlistenProgress = uProgress;
+
+      const uComplete = await listen<{
+        id: string;
+        output_path: string;
+        file_name: string;
+        source_format: string;
+        target_format: string;
+      }>("conversion:complete", (event) => {
+        if (active) {
+          const { id, output_path, file_name, source_format, target_format } = event.payload;
+          updateItem(id, { status: "done", progress: 100 });
+          addHistoryEntry({
+            id,
+            fileName: file_name,
+            sourceFormat: source_format,
+            targetFormat: target_format,
+            outputPath: output_path,
+            timestamp: Date.now(),
+            status: "done",
+          });
+        }
       });
-    });
-
-    const unlistenComplete = listen<{id: string, output_path: string}>("conversion:complete", (event) => {
-      const { id, output_path } = event.payload;
-      updateItem(id, { status: "done", progress: 100 });
-
-      const item = useQueueStore.getState().items.find((i) => i.id === id);
-      if (item) {
-        const ext = item.fileName.split(".").pop()?.toLowerCase() || "";
-        addHistoryEntry({
-          id,
-          fileName: item.fileName,
-          sourceFormat: ext.toUpperCase(),
-          targetFormat: (item.settings?.targetFormat || "webp").toUpperCase(),
-          outputPath: output_path,
-          timestamp: Date.now(),
-          status: "done",
-        });
+      if (!active) {
+        uComplete();
+        return;
       }
-    });
+      unlistenComplete = uComplete;
 
-    const unlistenError = listen<{id: string, error: string}>("conversion:error", (event) => {
-      const { id, error } = event.payload;
-      updateItem(id, { status: "error", error });
-
-      const item = useQueueStore.getState().items.find((i) => i.id === id);
-      if (item) {
-        const ext = item.fileName.split(".").pop()?.toLowerCase() || "";
-        addHistoryEntry({
-          id,
-          fileName: item.fileName,
-          sourceFormat: ext.toUpperCase(),
-          targetFormat: (item.settings?.targetFormat || "webp").toUpperCase(),
-          outputPath: "",
-          timestamp: Date.now(),
-          status: "error",
-          error,
-        });
+      const uError = await listen<{ id: string; error: string }>(
+        "conversion:error",
+        (event) => {
+          if (active) {
+            updateItem(event.payload.id, { status: "error", error: event.payload.error });
+            
+            // Log error in conversion history as well
+            const item = useQueueStore.getState().items.find((i) => i.id === event.payload.id);
+            if (item) {
+              const ext = item.fileName.split(".").pop()?.toLowerCase() || "";
+              addHistoryEntry({
+                id: event.payload.id,
+                fileName: item.fileName,
+                sourceFormat: ext.toUpperCase(),
+                targetFormat: (item.settings?.targetFormat || "webp").toUpperCase(),
+                outputPath: "",
+                timestamp: Date.now(),
+                status: "error",
+                error: event.payload.error,
+              });
+            }
+          }
+        }
+      );
+      if (!active) {
+        uError();
+        return;
       }
-    });
+      unlistenError = uError;
+    };
+
+    setupListeners();
 
     return () => {
-      unlistenProgress.then((fn) => fn());
-      unlistenComplete.then((fn) => fn());
-      unlistenError.then((fn) => fn());
+      active = false;
+      if (unlistenProgress) unlistenProgress();
+      if (unlistenComplete) unlistenComplete();
+      if (unlistenError) unlistenError();
     };
   }, [updateItem, addHistoryEntry]);
 };

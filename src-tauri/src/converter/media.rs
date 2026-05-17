@@ -46,16 +46,7 @@ pub async fn convert_media(
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
-    let mut output_path = output_dir.join(format!("{}.{}", file_stem, ext));
-    if output_path.exists() {
-        for i in 1..10000 {
-            let candidate = output_dir.join(format!("{} ({}).{}", file_stem, i, ext));
-            if !candidate.exists() {
-                output_path = candidate;
-                break;
-            }
-        }
-    }
+    let output_path = crate::utils::generate_unique_path(output_dir, file_stem, ext)?;
 
     let mut args = vec![
         "-y".to_string(),
@@ -149,7 +140,10 @@ pub async fn convert_media(
 
     let (mut rx, _child) = match cmd.spawn() {
         Ok(c) => c,
-        Err(e) => return Err(format!("Failed to spawn ffmpeg: {}", e)),
+        Err(e) => return Err(format!(
+            "Failed to spawn ffmpeg: {}. Please install FFmpeg and verify it is available on your system's PATH.",
+            e
+        )),
     };
 
     let mut exit_code = None;

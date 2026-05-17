@@ -9,18 +9,16 @@ interface FormatSelectorPopoverProps {
   sourceType?: 'image' | 'video' | 'audio';
 }
 
-type CategoryId = 'image' | 'video' | 'audio' | 'document';
+type CategoryId = 'image' | 'video' | 'audio';
 
 const IMAGE_FORMATS = ['AVIF', 'BMP', 'GIF', 'JPEG', 'JPG', 'PNG', 'TIFF', 'WEBP'];
 const VIDEO_FORMATS = ['MP4', 'WEBM', 'MKV', 'MOV', 'AVI'];
 const AUDIO_FORMATS = ['MP3', 'WAV', 'FLAC', 'OGG', 'M4A', 'AAC'];
-const DOCUMENT_FORMATS = ['PDF', 'DOCX', 'TXT'];
 
 const CATEGORIES: { id: CategoryId; label: string; formats: string[] }[] = [
   { id: 'image', label: 'Image', formats: IMAGE_FORMATS },
   { id: 'video', label: 'Video', formats: VIDEO_FORMATS },
   { id: 'audio', label: 'Audio', formats: AUDIO_FORMATS },
-  { id: 'document', label: 'Document', formats: DOCUMENT_FORMATS },
 ];
 
 export const FormatSelectorPopover = ({ onSelect, onClose, currentFormat, sourceType }: FormatSelectorPopoverProps) => {
@@ -29,7 +27,7 @@ export const FormatSelectorPopover = ({ onSelect, onClose, currentFormat, source
 
   const visibleCategories = sourceType
     ? CATEGORIES.filter((c) => c.id === sourceType)
-    : CATEGORIES.filter((c) => c.id !== 'document');
+    : CATEGORIES;
 
   const currentFormats = (
     CATEGORIES.find((c) => c.id === activeCategory)?.formats ?? []

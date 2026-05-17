@@ -31,16 +31,7 @@ pub fn convert_image(
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
-    let mut output_path = output_dir.join(format!("{}.{}", file_stem, ext));
-    if output_path.exists() {
-        for i in 1..10000 {
-            let candidate = output_dir.join(format!("{} ({}).{}", file_stem, i, ext));
-            if !candidate.exists() {
-                output_path = candidate;
-                break;
-            }
-        }
-    }
+    let output_path = crate::utils::generate_unique_path(output_dir, file_stem, ext)?;
 
     let reader = ImageReader::open(input_path)
         .map_err(|e| format!("Failed to open image: {}", e))?;

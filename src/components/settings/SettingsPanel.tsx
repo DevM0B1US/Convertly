@@ -324,7 +324,11 @@ export const SettingsPanel = () => {
                   value={globalSettings.globalSpeed ?? ""}
                   onChange={(e) => {
                     const val = e.target.value;
-                    globalSettings.setGlobalSpeed(val === "" ? null : val as any);
+                    if (val === "ultrafast" || val === "medium" || val === "veryslow") {
+                      globalSettings.setGlobalSpeed(val);
+                    } else {
+                      globalSettings.setGlobalSpeed(null);
+                    }
                   }}
                   className="w-full appearance-none bg-muted/5 border border-border rounded-lg py-2 pl-3 pr-10 text-sm font-medium text-text focus:outline-none focus:border-primary transition-all cursor-pointer"
                 >
