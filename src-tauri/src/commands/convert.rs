@@ -36,6 +36,7 @@ pub async fn start_conversion(
     // Cache resolved directories by their source_dir name so that multiple files from the same
     // dropped folder are placed in the same resolved output directory (avoiding duplicate (1), (2) folders).
     let mut resolved_dirs = std::collections::HashMap::<String, PathBuf>::new();
+    let mut reserved_paths = std::collections::HashSet::<PathBuf>::new();
 
     for (index, item) in items.into_iter().enumerate() {
         let handle_for_task = app_handle.clone();
@@ -69,6 +70,42 @@ pub async fn start_conversion(
 
         let settings = item.settings.unwrap_or_default();
         let media_type = item.media_type.clone();
+
+        // Determine target extension
+        let ext = match settings.target_format.to_lowercase().as_str() {
+            "webp" => "webp",
+            "avif" => "avif",
+            "jpeg" | "jpg" => "jpg",
+            "png" => "png",
+            "gif" => "gif",
+            "bmp" => "bmp",
+            "tiff" => "tiff",
+            "mp4" | "mp4-hevc" => "mp4",
+            "webm" => "webm",
+            "avi" => "avi",
+            "mkv" => "mkv",
+            "mov" => "mov",
+            "mp3" => "mp3",
+            "flac" => "flac",
+            "wav" => "wav",
+            "aac" => "aac",
+            "ogg" => "ogg",
+            "m4a" => "m4a",
+            "wma" => "wma",
+            _ => "output",
+        };
+
+        let file_stem = input_path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("output");
+
+        let output_path = match crate::utils::generate_unique_path(&out_dir_path, file_stem, ext, &reserved_paths) {
+            Ok(p) => p,
+            Err(e) => return Err(e),
+        };
+        reserved_paths.insert(output_path.clone());
+
         let permit = match semaphore.clone().acquire_owned().await {
             Ok(p) => p,
             Err(_) => return Err("Failed to acquire semaphore permit: closed".to_string()),
@@ -87,7 +124,7 @@ pub async fn start_conversion(
             let result = match media_type {
                 MediaType::Image => {
                     let input = input_path.clone();
-                    let out = out_dir_path.clone();
+                    let out_path = output_path.clone();
                     let s = settings.clone();
                     let handle = handle_for_task.clone();
                     let fid = id_for_task.clone();
@@ -130,9 +167,9 @@ pub async fn start_conversion(
                             let percent = (1.0 - (-ratio).exp()) * 95.0;
 
                             let _ = handle_progress.emit("conversion:progress", serde_json::json!({
-                                "id": fid_progress,
-                                "percent": percent as f32,
-                            }));
+                                    "id": fid_progress,
+                                    "percent": percent as f32,
+                                }));
                         }
                     });
 
@@ -153,7 +190,7 @@ pub async fn start_conversion(
                     };
 
                     let result = tokio::task::spawn_blocking(move || {
-                        convert_image(&handle, &input, &out, &s, &fid)
+                        convert_image(&handle, &input, &out_path, &s, &fid)
                     }).await
                         .unwrap_or_else(|e| Err(format!("Task panicked: {}", e)));
 
@@ -163,7 +200,7 @@ pub async fn start_conversion(
                     result
                 },
                 MediaType::Video | MediaType::Audio => {
-                    convert_media(&handle_for_task, &input_path, &out_dir_path, &settings, &media_type, &id_for_task).await
+                    convert_media(&handle_for_task, &input_path, &output_path, &settings, &media_type, &id_for_task).await
                 },
                 _ => Err("Unknown media type".to_string()),
             };

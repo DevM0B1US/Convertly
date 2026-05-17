@@ -11,11 +11,11 @@ use tauri::AppHandle;
 pub fn convert_image(
     _app_handle: &AppHandle,
     input_path: &Path,
-    output_dir: &Path,
+    output_path: &Path,
     settings: &ConversionSettings,
     _file_id: &str,
 ) -> Result<PathBuf, String> {
-    let ext = match settings.target_format.as_str() {
+    let _ext = match settings.target_format.as_str() {
         "webp" => "webp",
         "avif" => "avif",
         "jpeg" => "jpg",
@@ -25,13 +25,6 @@ pub fn convert_image(
         "tiff" => "tiff",
         _ => return Err(format!("Unsupported target format: {}", settings.target_format)),
     };
-
-    let file_stem = input_path
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("output");
-
-    let output_path = crate::utils::generate_unique_path(output_dir, file_stem, ext)?;
 
     let reader = ImageReader::open(input_path)
         .map_err(|e| format!("Failed to open image: {}", e))?;
@@ -133,5 +126,5 @@ pub fn convert_image(
         _ => unreachable!(),
     }
 
-    Ok(output_path)
+    Ok(output_path.to_path_buf())
 }

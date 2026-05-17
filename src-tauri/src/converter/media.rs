@@ -20,33 +20,11 @@ fn parse_ffmpeg_time(s: &str) -> Option<f64> {
 pub async fn convert_media(
     app_handle: &AppHandle,
     input_path: &Path,
-    output_dir: &Path,
+    output_path: &Path,
     settings: &ConversionSettings,
     media_type: &crate::types::MediaType,
     item_id: &str,
 ) -> Result<PathBuf, String> {
-    let ext = match settings.target_format.as_str() {
-        "mp4" | "mp4-hevc" => "mp4",
-        "webm" => "webm",
-        "avi" => "avi",
-        "mkv" => "mkv",
-        "mov" => "mov",
-        "mp3" => "mp3",
-        "flac" => "flac",
-        "wav" => "wav",
-        "aac" => "aac",
-        "ogg" => "ogg",
-        "m4a" => "m4a",
-        "wma" => "wma",
-        _ => return Err(format!("Unsupported media format: {}", settings.target_format)),
-    };
-
-    let file_stem = input_path
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .unwrap_or("output");
-
-    let output_path = crate::utils::generate_unique_path(output_dir, file_stem, ext)?;
 
     let mut args = vec![
         "-y".to_string(),
@@ -193,7 +171,7 @@ pub async fn convert_media(
     }
 
     match exit_code {
-        Some(0) => Ok(output_path),
+        Some(0) => Ok(output_path.to_path_buf()),
         Some(code) => Err(format!("FFmpeg failed with exit code: {:?}", code)),
         None => Err("FFmpeg terminated unexpectedly without exit code".to_string()),
     }

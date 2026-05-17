@@ -35,10 +35,15 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const [imageError, setImageError] = useState(false);
-  const [shouldAnimate, setShouldAnimate] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  // Limit slide-in animation to the first screenful of items (index <= 15)
+  // to avoid setting thousands of timers and delaying renders for long lists
+  const [shouldAnimate, setShouldAnimate] = useState(() => index <= 15);
 
   useEffect(() => {
+    if (index > 15) return;
     const delay = index * 40;
     const timer = setTimeout(() => {
       setShouldAnimate(false);
@@ -48,6 +53,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   useEffect(() => {
     setImageError(false);
+    setImageLoaded(false);
   }, [id, item?.path]);
 
   const ext = name.split('.').pop()?.toLowerCase() || '';
@@ -73,6 +79,13 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
     }
     return null;
   }, [isImage, item?.path, imageError]);
+
+  // Handle cached images where browser loads them before React attaches onLoad
+  useEffect(() => {
+    if (imgRef.current?.complete) {
+      setImageLoaded(true);
+    }
+  }, [imageUrl]);
 
   const handleRemove = () => {
     if (status === "converting" || status === "paused") {
@@ -154,7 +167,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   return (
     <div 
-      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-all duration-200 ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
+      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-[transform,box-shadow,border-color] duration-200 ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
       style={{
         animationDelay: shouldAnimate ? `${index * 40}ms` : undefined
       }}
@@ -164,10 +177,12 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
         <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 shadow-sm">
           {imageUrl ? (
             <img 
+              ref={imgRef}
               src={imageUrl} 
               alt={name} 
-              className="w-full h-full object-cover select-none pointer-events-none"
+              className={`w-full h-full object-cover select-none pointer-events-none transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
               onError={() => setImageError(true)}
+              onLoad={() => setImageLoaded(true)}
             />
           ) : (
             <Icon size={24} className="text-muted" />
@@ -176,8 +191,18 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
         {/* File Details */}
         <div className="flex flex-col flex-1 min-w-0">
-          <span className="font-semibold text-sm text-text truncate">{name}</span>
-          <div className="flex items-center gap-2 text-xs text-muted mt-0.5">
+          <div className="flex items-center gap-2 min-w-0">
+            {item?.sourceDir && (
+              <span 
+                className="text-[10px] font-bold tracking-wider uppercase bg-accent/15 text-accent px-1.5 py-0.5 rounded shrink-0 select-none border border-accent/10 shadow-sm"
+                title={`Original folder: ${item.sourceDir}`}
+              >
+                {item.sourceDir}
+              </span>
+            )}
+            <span className="font-semibold text-sm text-text truncate" title={item?.path || name}>{name}</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-muted mt-1">
             <span>{size}</span>
             <span className="opacity-40">•</span>
             <span>{sourceFormat}</span>

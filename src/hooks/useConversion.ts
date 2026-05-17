@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { useQueueStore } from "../stores/queueStore";
 import { useHistoryStore } from "../stores/historyStore";
+import { useSettingsStore } from "../stores/settingsStore";
 
 export const useConversion = () => {
   const updateItem = useQueueStore((state) => state.updateItem);
@@ -33,22 +34,25 @@ export const useConversion = () => {
       const uComplete = await listen<{
         id: string;
         output_path: string;
-        file_name: string;
-        source_format: string;
-        target_format: string;
       }>("conversion:complete", (event) => {
         if (active) {
-          const { id, output_path, file_name, source_format, target_format } = event.payload;
+          const { id, output_path } = event.payload;
           updateItem(id, { status: "done", progress: 100 });
-          addHistoryEntry({
-            id,
-            fileName: file_name,
-            sourceFormat: source_format,
-            targetFormat: target_format,
-            outputPath: output_path,
-            timestamp: Date.now(),
-            status: "done",
-          });
+          
+          const item = useQueueStore.getState().items.find((i) => i.id === id);
+          if (item) {
+            const ext = item.fileName.split(".").pop()?.toLowerCase() || "";
+            const globalFormat = useSettingsStore.getState().globalFormat;
+            addHistoryEntry({
+              id,
+              fileName: item.fileName,
+              sourceFormat: ext.toUpperCase(),
+              targetFormat: (item.settings?.targetFormat || globalFormat || "webp").toUpperCase(),
+              outputPath: output_path,
+              timestamp: Date.now(),
+              status: "done",
+            });
+          }
         }
       });
       if (!active) {
