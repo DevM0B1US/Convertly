@@ -151,11 +151,13 @@ pub async fn convert_media(
                             if let Ok(usec) = usec_str.trim().parse::<u64>() {
                                 if let Some(total) = duration_secs {
                                     let total_usec = (total * 1_000_000.0) as u64;
-                                    let percent = ((usec as f64 / total_usec as f64) * 100.0).min(100.0);
-                                    let _ = app_handle.emit("conversion:progress", serde_json::json!({
-                                        "id": item_id_owned.clone(),
-                                        "percent": percent as f32,
-                                    }));
+                                    if total_usec > 0 {
+                                        let percent = ((usec as f64 / total_usec as f64) * 100.0).min(100.0);
+                                        let _ = app_handle.emit("conversion:progress", serde_json::json!({
+                                            "id": item_id_owned.clone(),
+                                            "percent": percent as f32,
+                                        }));
+                                    }
                                 }
                             }
                         }
