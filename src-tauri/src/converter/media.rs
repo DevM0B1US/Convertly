@@ -5,11 +5,6 @@ use tauri_plugin_shell::ShellExt;
 use tauri::AppHandle;
 use tauri_plugin_shell::process::CommandEvent;
 
-#[derive(serde::Serialize, Clone)]
-struct ProgressEvent {
-    id: String,
-    percent: f32,
-}
 
 fn parse_ffmpeg_time(s: &str) -> Option<f64> {
     let parts: Vec<&str> = s.split(':').collect();
@@ -51,7 +46,16 @@ pub async fn convert_media(
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
-    let output_path = output_dir.join(format!("{}.{}", file_stem, ext));
+    let mut output_path = output_dir.join(format!("{}.{}", file_stem, ext));
+    if output_path.exists() {
+        for i in 1..10000 {
+            let candidate = output_dir.join(format!("{} ({}).{}", file_stem, i, ext));
+            if !candidate.exists() {
+                output_path = candidate;
+                break;
+            }
+        }
+    }
 
     let mut args = vec![
         "-y".to_string(),
@@ -155,28 +159,33 @@ pub async fn convert_media(
     while let Some(event) = rx.recv().await {
         match event {
             CommandEvent::Stdout(bytes) => {
-                if let Ok(line) = String::from_utf8(bytes) {
-                    if let Some(usec_str) = line.strip_prefix("out_time_usec=") {
-                        if let Ok(usec) = usec_str.trim().parse::<u64>() {
-                            if let Some(total) = duration_secs {
-                                let total_usec = (total * 1_000_000.0) as u64;
-                                let percent = ((usec as f64 / total_usec as f64) * 100.0).min(100.0);
-                                let _ = app_handle.emit("conversion:progress", ProgressEvent {
-                                    id: item_id_owned.clone(),
-                                    percent: percent as f32,
-                                });
+                if let Ok(output) = String::from_utf8(bytes) {
+                    for line in output.lines() {
+                        if let Some(usec_str) = line.trim().strip_prefix("out_time_usec=") {
+                            if let Ok(usec) = usec_str.trim().parse::<u64>() {
+                                if let Some(total) = duration_secs {
+                                    let total_usec = (total * 1_000_000.0) as u64;
+                                    let percent = ((usec as f64 / total_usec as f64) * 100.0).min(100.0);
+                                    let _ = app_handle.emit("conversion:progress", serde_json::json!({
+                                        "id": item_id_owned.clone(),
+                                        "percent": percent as f32,
+                                    }));
+                                }
                             }
                         }
                     }
                 }
             }
             CommandEvent::Stderr(bytes) => {
-                if let Ok(line) = String::from_utf8(bytes) {
-                    if duration_secs.is_none() {
-                        if let Some(dur_line) = line.strip_prefix("  Duration: ") {
-                            if let Some(end) = dur_line.find(',') {
-                                let time_str = &dur_line[..end];
-                                duration_secs = parse_ffmpeg_time(time_str);
+                if let Ok(output) = String::from_utf8(bytes) {
+                    for line in output.lines() {
+                        if duration_secs.is_none() {
+                            let trimmed = line.trim();
+                            if let Some(dur_line) = trimmed.strip_prefix("Duration:") {
+                                if let Some(end) = dur_line.find(',') {
+                                    let time_str = dur_line[..end].trim();
+                                    duration_secs = parse_ffmpeg_time(time_str);
+                                }
                             }
                         }
                     }

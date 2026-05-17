@@ -28,6 +28,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const globalFps = useSettingsStore(state => state.globalFps);
   const globalAudioChannels = useSettingsStore(state => state.globalAudioChannels);
   const globalSpeed = useSettingsStore(state => state.globalSpeed);
+  const maxConcurrent = useSettingsStore(state => state.maxConcurrent);
   
   const item = useQueueStore(state => state.items.find(i => i.id === id));
   const targetFormat = (item?.settings?.targetFormat || globalFormat).toUpperCase();
@@ -81,22 +82,30 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
   const handleConvert = async () => {
     if (!item) return;
     updateItem(id, { status: "queued", error: undefined });
-    const settings = item.settings || {
-      targetFormat: globalFormat,
-      quality: globalQuality,
-      resize: globalResize,
-      stripMetadata: globalStripMetadata,
-      fps: globalFps,
-      audioChannels: globalAudioChannels,
-      speed: globalSpeed,
+    const settings = {
+      targetFormat: item.settings?.targetFormat || globalFormat,
+      quality: item.settings?.quality ?? globalQuality,
+      resize: item.settings?.resize !== undefined ? item.settings.resize : globalResize,
+      stripMetadata: item.settings?.stripMetadata ?? globalStripMetadata,
+      fps: item.settings?.fps !== undefined ? item.settings.fps : globalFps,
+      audioChannels: item.settings?.audioChannels !== undefined ? item.settings.audioChannels : globalAudioChannels,
+      speed: item.settings?.speed !== undefined ? item.settings.speed : globalSpeed,
     };
-    await startConversion([{ ...item, settings }], outputDir || undefined);
+    await startConversion([{ ...item, settings }], outputDir || undefined, maxConcurrent);
   };
 
   const handleFormatChange = (newFormat: TargetFormat) => {
     updateItem(id, {
       settings: {
-        ...(item?.settings || { quality: globalQuality, resize: null, stripMetadata: false, targetFormat: globalFormat }),
+        ...(item?.settings || {
+          quality: globalQuality,
+          resize: globalResize,
+          stripMetadata: globalStripMetadata,
+          fps: globalFps,
+          audioChannels: globalAudioChannels,
+          speed: globalSpeed,
+          targetFormat: globalFormat,
+        }),
         targetFormat: newFormat
       }
     });

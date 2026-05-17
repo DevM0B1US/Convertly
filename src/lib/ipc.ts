@@ -17,8 +17,8 @@ export const clearQueue = async (): Promise<void> => {
   return await invoke("clear_queue");
 };
 
-export const startConversion = async (items: QueuedFile[], outputDir?: string): Promise<void> => {
-  return await invoke("start_conversion", { items, outputDir });
+export const startConversion = async (items: QueuedFile[], outputDir?: string, maxConcurrent?: number): Promise<void> => {
+  return await invoke("start_conversion", { items, outputDir, maxConcurrent });
 };
 
 export const cancelConversion = async (id: string): Promise<void> => {

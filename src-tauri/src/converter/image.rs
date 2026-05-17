@@ -2,17 +2,18 @@ use crate::types::ConversionSettings;
 use image::{ImageReader, ImageFormat, imageops::FilterType, ExtendedColorType, ImageEncoder};
 use image::codecs::jpeg::JpegEncoder;
 use image::codecs::avif::AvifEncoder;
+use webp::Encoder as WebpEncoder;
+use webp::WebPConfig;
 use std::path::{Path, PathBuf};
 use std::fs::File;
-use tauri::Emitter;
 use tauri::AppHandle;
 
 pub fn convert_image(
-    app_handle: &AppHandle,
+    _app_handle: &AppHandle,
     input_path: &Path,
     output_dir: &Path,
     settings: &ConversionSettings,
-    file_id: &str,
+    _file_id: &str,
 ) -> Result<PathBuf, String> {
     let ext = match settings.target_format.as_str() {
         "webp" => "webp",
@@ -30,7 +31,16 @@ pub fn convert_image(
         .and_then(|s| s.to_str())
         .unwrap_or("output");
 
-    let output_path = output_dir.join(format!("{}.{}", file_stem, ext));
+    let mut output_path = output_dir.join(format!("{}.{}", file_stem, ext));
+    if output_path.exists() {
+        for i in 1..10000 {
+            let candidate = output_dir.join(format!("{} ({}).{}", file_stem, i, ext));
+            if !candidate.exists() {
+                output_path = candidate;
+                break;
+            }
+        }
+    }
 
     let reader = ImageReader::open(input_path)
         .map_err(|e| format!("Failed to open image: {}", e))?;
@@ -39,12 +49,6 @@ pub fn convert_image(
         .map_err(|e| format!("Failed to guess format: {}", e))?
         .decode()
         .map_err(|e| format!("Failed to decode image: {}", e))?;
-
-    let _ = app_handle.emit("conversion:progress", serde_json::json!({
-        "id": file_id,
-        "percent": 50.0,
-        "stage": "encoding",
-    }));
 
     if let Some(resize) = &settings.resize {
         if resize.enabled {
@@ -76,6 +80,7 @@ pub fn convert_image(
                     _ => {}
                 }
             }
+
         }
     }
 
@@ -94,13 +99,29 @@ pub fn convert_image(
             let file = File::create(&output_path)
                 .map_err(|e| format!("Failed to create output file: {}", e))?;
             let rgba = img.to_rgba8();
-            AvifEncoder::new_with_speed_quality(file, 6, quality)
+            let avif_speed = match settings.speed.as_deref() {
+                Some("ultrafast") => 9,
+                Some("veryslow") => 3,
+                _ => 6,
+            };
+            AvifEncoder::new_with_speed_quality(file, avif_speed, quality)
                 .write_image(rgba.as_raw(), rgba.width(), rgba.height(), ExtendedColorType::Rgba8)
                 .map_err(|e| format!("Failed to encode AVIF: {}", e))?;
         }
         "webp" => {
-            img.save_with_format(&output_path, ImageFormat::WebP)
-                .map_err(|e| format!("Failed to encode WebP: {}", e))?;
+            let rgba = img.to_rgba8();
+            let encoder = WebpEncoder::from_rgba(rgba.as_raw(), rgba.width(), rgba.height());
+            let mut config = WebPConfig::new().map_err(|_| "Failed to create WebP config".to_string())?;
+            config.quality = quality as f32;
+            config.method = match settings.speed.as_deref() {
+                Some("ultrafast") => 0,
+                Some("veryslow") => 6,
+                _ => 3,
+            };
+            let webp_data = encoder.encode_advanced(&config)
+                .map_err(|e| format!("Failed to encode WebP: {:?}", e))?;
+            std::fs::write(&output_path, &webp_data[..])
+                .map_err(|e| format!("Failed to write WebP: {}", e))?;
         }
         "png" => {
             img.save_with_format(&output_path, ImageFormat::Png)

@@ -91,7 +91,7 @@ export const SettingsPanel = () => {
     }));
 
     try {
-      await startConversion(itemsToConvert, globalSettings.outputDir || undefined);
+      await startConversion(itemsToConvert, globalSettings.outputDir || undefined, globalSettings.maxConcurrent);
     } catch (err) {
       console.error("Conversion batch failed:", err);
     } finally {
