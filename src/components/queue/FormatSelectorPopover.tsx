@@ -36,9 +36,9 @@ export const FormatSelectorPopover = ({ onSelect, onClose, currentFormat, source
   ).filter((f) => f.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-[400px] bg-surface border border-border rounded-xl shadow-2xl z-[100] flex flex-col overflow-hidden">
+    <div className="absolute top-full right-0 mt-2 w-[400px] bg-surface/90 backdrop-blur-md border border-border rounded-xl shadow-2xl z-[100] flex flex-col overflow-hidden">
       {/* Search Header */}
-      <div className="flex items-center gap-2 p-3 border-b border-border bg-background/50">
+      <div className="flex items-center gap-2 p-3 border-b border-border bg-background/40">
         <Search size={16} className="text-muted" />
         <input
           autoFocus

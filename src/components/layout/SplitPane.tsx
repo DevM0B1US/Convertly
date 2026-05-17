@@ -1,19 +1,17 @@
 import { QueueItem } from "../queue/QueueItem";
 import { SettingsPanel } from "../settings/SettingsPanel";
 import { useQueueStore } from "../../stores/queueStore";
-import { useFileDrop } from "../../hooks/useFileDrop";
 import { useConversion } from "../../hooks/useConversion";
 import { open } from "@tauri-apps/plugin-dialog";
 import { addFiles } from "../../lib/ipc";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
-import { GripVertical, Plus } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { VisualFormatSelector } from "../convert/VisualFormatSelector";
 
 export const SplitPane = () => {
   const items = useQueueStore((state) => state.items);
   const addFilesToQueue = useQueueStore((state) => state.addFiles);
   const reorderQueue = useQueueStore((state) => state.reorder);
-  const { isHovering } = useFileDrop();
   
   useConversion();
 
@@ -50,31 +48,21 @@ export const SplitPane = () => {
         {/* Functional Visual Selector */}
         <VisualFormatSelector onBrowse={handleBrowse} />
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col">
-            <h2 className="text-xs font-black text-muted uppercase tracking-[0.2em]">Queue</h2>
-            <span className="text-[10px] text-muted/50 font-medium mt-0.5">Manage and individualize your conversions</span>
+            <h2 className="text-lg font-extrabold text-text uppercase tracking-widest">Queue</h2>
+            <span className="text-sm text-muted/80 font-medium mt-1">Manage and customize your files</span>
           </div>
-          <button
-            onClick={handleBrowse}
-            className="flex items-center gap-2 px-3 h-8 bg-surface border border-border text-muted rounded-lg hover:text-text hover:border-muted transition-all text-[11px] font-bold uppercase tracking-wider shadow-sm"
-          >
-            <Plus size={14} />
-            Add More
-          </button>
         </div>
 
-        <div 
-          className={`flex-1 overflow-y-auto min-h-0 rounded-xl transition-all border-2 border-dashed p-4
-            ${isHovering 
-              ? 'border-primary bg-primary/5' 
-              : 'border-transparent'}`}
-        >
+        <div className="flex-1 overflow-y-auto min-h-0 rounded-xl transition-all">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center text-muted p-12">
-              <img src="/logo.avif" alt="Convertly" width="64" height="64" className="mb-4 opacity-40" />
-              <p className="text-sm">Your queue is empty.</p>
-              <p className="text-xs mt-1">Drag and drop files here or click "Add Files"</p>
+              <img src="/logo.avif" alt="Convertly" width="96" height="96" className="mb-4 opacity-40 select-none pointer-events-none" />
+              <p className="text-lg font-bold text-text mb-1">Your queue is empty.</p>
+              <p className="text-sm text-muted mt-2 max-w-[320px] mx-auto leading-relaxed">
+                Drag and drop files at the top, or click the <strong className="text-primary font-bold">Source</strong> button to browse.
+              </p>
             </div>
           ) : (
             <DragDropContext onDragEnd={onDragEnd}>
@@ -91,8 +79,11 @@ export const SplitPane = () => {
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className={`flex items-center gap-2 ${snapshot.isDragging ? 'opacity-90' : ''}`}
-                            style={provided.draggableProps.style}
+                            className={`flex items-center gap-2 animate-queue-slide-in ${snapshot.isDragging ? 'opacity-90' : ''}`}
+                            style={{
+                              ...provided.draggableProps.style,
+                              animationDelay: `${index * 40}ms`
+                            }}
                           >
                             <div 
                               {...provided.dragHandleProps}

@@ -48,11 +48,32 @@ pub fn convert_image(
 
     if let Some(resize) = &settings.resize {
         if resize.enabled {
-            if let (Some(w), Some(h)) = (resize.width, resize.height) {
-                if resize.maintain_aspect_ratio {
-                    img = img.resize(w, h, FilterType::Lanczos3);
-                } else {
-                    img = img.resize_exact(w, h, FilterType::Lanczos3);
+            let orig_w = img.width();
+            let orig_h = img.height();
+
+            if orig_w > 0 && orig_h > 0 {
+                let target_w = resize.width.filter(|&w| w > 0);
+                let target_h = resize.height.filter(|&h| h > 0);
+
+                match (target_w, target_h) {
+                    (Some(w), Some(h)) => {
+                        if resize.maintain_aspect_ratio {
+                            img = img.resize(w, h, FilterType::Lanczos3);
+                        } else {
+                            img = img.resize_exact(w, h, FilterType::Lanczos3);
+                        }
+                    }
+                    (None, Some(h)) => {
+                        // Height only, maintain aspect ratio
+                        let w = ((orig_w as f64 * h as f64) / orig_h as f64).round() as u32;
+                        img = img.resize(w, h, FilterType::Lanczos3);
+                    }
+                    (Some(w), None) => {
+                        // Width only, maintain aspect ratio
+                        let h = ((orig_h as f64 * w as f64) / orig_w as f64).round() as u32;
+                        img = img.resize(w, h, FilterType::Lanczos3);
+                    }
+                    _ => {}
                 }
             }
         }

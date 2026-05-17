@@ -14,7 +14,9 @@ export const TitleBar = () => {
         }}
         className="flex-1 flex items-center gap-2 px-3 h-full cursor-grab active:cursor-grabbing select-none"
       >
-        <img src="/logo.avif" alt="Convertly" width="20" height="20" className="rounded-sm" style={{ pointerEvents: "none" }} />
+        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center p-[3px] shadow-sm shrink-0 select-none" style={{ pointerEvents: "none" }}>
+          <img src="/logo.avif" alt="Convertly" className="w-full h-full object-contain" style={{ pointerEvents: "none" }} />
+        </div>
         <span className="font-medium text-sm" style={{ pointerEvents: "none" }}>
           Convertly - File Converter
         </span>

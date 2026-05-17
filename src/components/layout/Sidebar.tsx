@@ -1,4 +1,4 @@
-import { ArrowLeftRight, FileText, HelpCircle, Moon, Sun } from "lucide-react";
+import { ArrowLeftRight, FileText, Moon, Sun } from "lucide-react";
 import { useAppStore, AppView } from "../../stores/appStore";
 
 interface NavButtonProps {
@@ -70,15 +70,6 @@ export const Sidebar = () => {
           icon={theme ? <Sun size={22} strokeWidth={1.5} /> : <Moon size={22} strokeWidth={1.5} />}
           label="Toggle Theme"
           onClick={toggleTheme}
-        />
-        <NavButton
-          icon={<HelpCircle size={22} strokeWidth={1.5} />}
-          label="Help"
-          onClick={() => {
-            if (typeof window !== "undefined") {
-              window.open("https://github.com/DevM0B1US/Convertly", "_blank");
-            }
-          }}
         />
       </div>
     </div>

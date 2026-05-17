@@ -17,6 +17,9 @@ export interface ConversionSettings {
   quality: number; // 1-100
   resize: ResizeConfig | null;
   stripMetadata: boolean;
+  fps?: number | null; // null = Keep Original
+  audioChannels?: number | null; // null = Keep Original, 1 = Mono, 2 = Stereo
+  speed?: "ultrafast" | "medium" | "veryslow" | null; // null = Medium
 }
 
 export interface FileMetadata {

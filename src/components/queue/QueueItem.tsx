@@ -4,6 +4,7 @@ import { useSettingsStore } from "../../stores/settingsStore";
 import { TargetFormat } from "../../types/file";
 import { cancelConversion, startConversion } from "../../lib/ipc";
 import { useState, useRef, useEffect } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { FormatSelectorPopover } from "./FormatSelectorPopover";
 
 interface QueueItemProps {
@@ -23,12 +24,20 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   const outputDir = useSettingsStore(state => state.outputDir);
   const globalResize = useSettingsStore(state => state.globalResize);
   const globalStripMetadata = useSettingsStore(state => state.globalStripMetadata);
+  const globalFps = useSettingsStore(state => state.globalFps);
+  const globalAudioChannels = useSettingsStore(state => state.globalAudioChannels);
+  const globalSpeed = useSettingsStore(state => state.globalSpeed);
   
   const item = useQueueStore(state => state.items.find(i => i.id === id));
   const targetFormat = (item?.settings?.targetFormat || globalFormat).toUpperCase();
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [id, item?.path]);
 
   const ext = name.split('.').pop()?.toLowerCase() || '';
   const sourceFormat = ext.toUpperCase();
@@ -55,6 +64,9 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
       quality: globalQuality,
       resize: globalResize,
       stripMetadata: globalStripMetadata,
+      fps: globalFps,
+      audioChannels: globalAudioChannels,
+      speed: globalSpeed,
     };
     await startConversion([{ ...item, settings }], outputDir || undefined);
   };
@@ -108,9 +120,18 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
   return (
     <div className="relative bg-surface border border-border rounded-lg transition-colors">
       <div className="flex items-center gap-4 px-4 pt-4 pb-3">
-        {/* File Type Icon */}
-        <div className="w-12 h-12 rounded-xl bg-muted/10 flex items-center justify-center text-muted shrink-0">
-          <Icon size={24} />
+        {/* File Type Icon / Preview */}
+        <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 bg-surface/5 shadow-sm">
+          {isImage && item?.path && !imageError ? (
+            <img 
+              src={convertFileSrc(item.path)} 
+              alt={name} 
+              className="w-full h-full object-cover select-none pointer-events-none"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <Icon size={24} className="text-muted" />
+          )}
         </div>
 
         {/* File Details */}
@@ -128,7 +149,7 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
           {status === "queued" && (
             <button 
               onClick={handleConvert}
-              className="h-8 px-4 rounded-lg bg-secondary text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95"
+              className="h-8 px-4 rounded-lg bg-accent text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
             >
               Convert
             </button>
@@ -159,10 +180,10 @@ export const QueueItem = ({ id, name, size, status, progress }: QueueItemProps) 
             <span className="text-muted/30 text-xs">→</span>
             <button 
               onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-              className={`flex items-center gap-2 h-8 px-3 rounded-lg border transition-all ${
+              className={`flex items-center gap-2 h-8 px-3 rounded-lg border transition-all cursor-pointer ${
                 isPopoverOpen 
-                  ? 'border-primary bg-primary text-white shadow-md' 
-                  : 'border-primary/20 bg-primary/5 text-primary hover:border-primary/50'
+                  ? 'border-accent bg-accent text-white shadow-md' 
+                  : 'border-accent/20 bg-accent/5 text-accent hover:border-accent/50'
               }`}
             >
                <span className="text-xs font-bold">{targetFormat}</span>

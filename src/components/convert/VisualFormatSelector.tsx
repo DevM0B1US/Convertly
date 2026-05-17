@@ -1,8 +1,10 @@
-import { RefreshCw, ChevronDown, Image as ImageIcon, Film, Music, Plus } from "lucide-react";
+import { RefreshCw, ChevronDown, Image as ImageIcon, Film, Music, Plus, Files } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useQueueStore } from "../../stores/queueStore";
 import { TargetFormat } from "../../types/file";
 import { useState, useMemo, useEffect } from "react";
+import { FormatSelectorPopover } from "../queue/FormatSelectorPopover";
+import { addFiles } from "../../lib/ipc";
 
 const ALL_FORMATS = {
   image: [
@@ -39,12 +41,72 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
   const globalFormat = useSettingsStore((state) => state.globalFormat);
   const setGlobalFormat = useSettingsStore((state) => state.setGlobalFormat);
   const [isOpen, setIsOpen] = useState(false);
+  const [isDragOverBox, setIsDragOverBox] = useState(false);
+  const addFilesToQueue = useQueueStore((state) => state.addFiles);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverBox(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragOverBox(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOverBox(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      const paths = files
+        .map((f: any) => f.path || f.name)
+        .filter(Boolean);
+
+      if (paths.length > 0) {
+        try {
+          const newItems = await addFiles(paths);
+          addFilesToQueue(newItems);
+        } catch (err) {
+          console.error("Failed to add dropped files:", err);
+        }
+      }
+    }
+  };
 
   const queueItems = useQueueStore((state) => state.items);
   const mediaTypes = useMemo(() => {
     const types = new Set(queueItems.map((i) => i.mediaType));
     return types;
   }, [queueItems]);
+
+  const allTypes = useMemo(() => Array.from(mediaTypes), [mediaTypes]);
+
+  const sourceDisplay = useMemo(() => {
+    const count = queueItems.length;
+    if (count === 0) {
+      return {
+        icon: <Plus size={24} className={`transition-all duration-200 ${isDragOverBox ? 'text-primary scale-110 rotate-90' : 'text-muted group-hover/card:text-primary'}`} />,
+        label: "Add Files"
+      };
+    }
+
+    let icon = <Files size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
+    if (allTypes.length === 1) {
+      if (allTypes[0] === "Image") {
+        icon = <ImageIcon size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
+      } else if (allTypes[0] === "Video") {
+        icon = <Film size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
+      } else if (allTypes[0] === "Audio") {
+        icon = <Music size={24} className="text-primary group-hover/card:scale-110 transition-transform duration-200" />;
+      }
+    }
+
+    return {
+      icon,
+      label: `${count} ${count === 1 ? 'File' : 'Files'}`
+    };
+  }, [queueItems, allTypes, isDragOverBox]);
 
   const availableFormats = useMemo(() => {
     if (mediaTypes.size === 0 || mediaTypes.has("Unknown")) {
@@ -79,18 +141,41 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
     : 'audio';
 
   return (
-    <div className="w-full bg-surface border border-border rounded-lg mb-8">
+    <div 
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`w-full rounded-lg mb-8 transition-all duration-300 group/card select-none
+        ${isDragOverBox 
+          ? 'bg-primary/5 border-2 border-dashed border-primary shadow-[0_0_25px_rgba(10,124,110,0.15)] scale-[1.01]' 
+          : 'bg-surface border border-border hover:border-primary/20'}`}
+    >
       <div className="flex items-center justify-center h-32 gap-10">
         
-        {/* Source: Add Files Button */}
+        {/* Source: Dynamic Queue Indicator / Add Trigger */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Source</span>
+          <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] group-hover/card:text-primary transition-colors duration-300">Source</span>
           <button
-            onClick={onBrowse}
-            className="flex flex-col items-center justify-center w-28 h-20 rounded-lg border-2 border-dashed border-muted/20 bg-muted/5 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBrowse();
+            }}
+            className={`flex flex-col items-center justify-center w-28 h-20 rounded-lg transition-all duration-300 cursor-pointer outline-none
+              ${queueItems.length > 0 
+                ? 'border border-solid border-primary/20 bg-primary/5 hover:border-primary/40 hover:bg-primary/10' 
+                : `border-2 border-dashed ${
+                    isDragOverBox 
+                      ? 'border-primary bg-primary/10 text-primary shadow-[0_0_10px_rgba(10,124,110,0.1)] scale-105' 
+                      : 'border-muted/20 bg-muted/5 group-hover/card:border-primary/40 group-hover/card:bg-primary/10'
+                  }`}`}
           >
-            <Plus size={24} className="text-muted group-hover:text-primary transition-colors" />
-            <span className="text-[10px] font-bold text-muted mt-1 uppercase tracking-wider group-hover:text-primary">Add Files</span>
+            {sourceDisplay.icon}
+            <span className={`text-[10px] font-black mt-1.5 uppercase tracking-wider transition-colors duration-300
+              ${queueItems.length > 0 ? 'text-text' : 'text-muted group-hover/card:text-primary'}`}
+            >
+              {sourceDisplay.label}
+            </span>
           </button>
         </div>
 
@@ -104,11 +189,16 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
           <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em]">Target</span>
           <div className="relative">
             <button
-              onClick={availableFormats.length > 1 ? () => setIsOpen(!isOpen) : undefined}
-              className="flex items-center justify-center w-28 h-20 rounded-lg border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-colors group px-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (availableFormats.length > 1) {
+                  setIsOpen(!isOpen);
+                }
+              }}
+              className="flex items-center justify-center w-28 h-20 rounded-lg border-2 border-accent bg-accent/5 hover:bg-accent/10 transition-colors group px-2 cursor-pointer"
             >
               <div className="flex flex-col items-center gap-1">
-                <div className="text-primary">
+                <div className="text-accent">
                   {getIcon(currentType)}
                 </div>
                 <div className="flex items-center gap-1">
@@ -116,7 +206,7 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
                     {currentFormat?.label ?? "—"}
                   </span>
                   {availableFormats.length > 1 && (
-                    <ChevronDown size={14} className={`text-muted transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={14} className={`text-accent/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                   )}
                 </div>
               </div>
@@ -124,25 +214,16 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
 
             {/* Dropdown Menu */}
             {isOpen && availableFormats.length > 1 && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-48 bg-surface border border-border rounded-lg shadow-xl z-50 overflow-hidden">
-                <div className="p-1 max-h-64 overflow-y-auto">
-                  {availableFormats.map((f) => (
-                    <button
-                      key={f.value}
-                      onClick={() => {
-                        setGlobalFormat(f.value);
-                        setIsOpen(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-semibold transition-colors ${
-                        globalFormat === f.value
-                          ? 'bg-primary text-white'
-                          : 'hover:bg-muted/5 text-text'
-                      }`}
-                    >
-                      <span>{f.label}</span>
-                    </button>
-                  ))}
-                </div>
+              <div onClick={(e) => e.stopPropagation()}>
+                <FormatSelectorPopover
+                  onSelect={(format) => {
+                    setGlobalFormat(format);
+                    setIsOpen(false);
+                  }}
+                  onClose={() => setIsOpen(false)}
+                  currentFormat={globalFormat}
+                  sourceType={allTypes.length === 1 ? (allTypes[0].toLowerCase() as 'image' | 'video' | 'audio') : undefined}
+                />
               </div>
             )}
           </div>

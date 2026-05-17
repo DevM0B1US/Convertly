@@ -78,6 +78,37 @@ pub async fn convert_media(
         args.push("-crf".to_string());
         args.push(crf.to_string());
 
+        if let Some(ref speed) = settings.speed {
+            if vcodec == "libx264" || vcodec == "libx265" {
+                args.push("-preset".to_string());
+                args.push(speed.clone());
+            } else if vcodec == "libvpx-vp9" {
+                args.push("-deadline".to_string());
+                match speed.as_str() {
+                    "ultrafast" => {
+                        args.push("realtime".to_string());
+                        args.push("-cpu-used".to_string());
+                        args.push("8".to_string());
+                    }
+                    "veryslow" => {
+                        args.push("best".to_string());
+                    }
+                    _ => {
+                        args.push("good".to_string());
+                        args.push("-cpu-used".to_string());
+                        args.push("2".to_string());
+                    }
+                }
+            }
+        }
+
+        if let Some(fps) = settings.fps {
+            if fps > 0 {
+                args.push("-r".to_string());
+                args.push(fps.to_string());
+            }
+        }
+
         if let Some(resize) = &settings.resize {
             if resize.enabled {
                 let w = resize.width.unwrap_or(0);
@@ -99,6 +130,13 @@ pub async fn convert_media(
         let bitrate = 32 + (settings.quality as f32 * 2.88) as u32;
         args.push("-b:a".to_string());
         args.push(format!("{}k", bitrate));
+    }
+
+    if let Some(channels) = settings.audio_channels {
+        if channels > 0 {
+            args.push("-ac".to_string());
+            args.push(channels.to_string());
+        }
     }
 
     args.push(output_path.to_string_lossy().to_string());

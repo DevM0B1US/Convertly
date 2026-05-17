@@ -7,6 +7,9 @@ interface SettingsState {
   globalQuality: number; // 1-100
   globalResize: ResizeConfig | null;
   globalStripMetadata: boolean;
+  globalFps: number | null; // null = Keep Original
+  globalAudioChannels: number | null; // null = Keep Original, 1 = Mono, 2 = Stereo
+  globalSpeed: "ultrafast" | "medium" | "veryslow" | null; // null = Medium
   perFileOverrides: Record<string, Partial<ConversionSettings>>;
   outputDir: string | null; // null = same as source
   maxConcurrent: number; // 1-4, default 2
@@ -15,6 +18,9 @@ interface SettingsState {
   setGlobalQuality: (quality: number) => void;
   setGlobalResize: (resize: ResizeConfig | null) => void;
   setGlobalStripMetadata: (strip: boolean) => void;
+  setGlobalFps: (fps: number | null) => void;
+  setGlobalAudioChannels: (channels: number | null) => void;
+  setGlobalSpeed: (speed: "ultrafast" | "medium" | "veryslow" | null) => void;
   setFileOverride: (id: string, settings: Partial<ConversionSettings>) => void;
   removeFileOverride: (id: string) => void;
   setOutputDir: (dir: string | null) => void;
@@ -28,6 +34,9 @@ export const useSettingsStore = create<SettingsState>()(
       globalQuality: 85,
       globalResize: null,
       globalStripMetadata: false,
+      globalFps: null,
+      globalAudioChannels: null,
+      globalSpeed: null,
       perFileOverrides: {},
       outputDir: null,
       maxConcurrent: 2,
@@ -36,6 +45,9 @@ export const useSettingsStore = create<SettingsState>()(
       setGlobalQuality: (quality) => set({ globalQuality: quality }),
       setGlobalResize: (resize) => set({ globalResize: resize }),
       setGlobalStripMetadata: (strip) => set({ globalStripMetadata: strip }),
+      setGlobalFps: (fps) => set({ globalFps: fps }),
+      setGlobalAudioChannels: (channels) => set({ globalAudioChannels: channels }),
+      setGlobalSpeed: (speed) => set({ globalSpeed: speed }),
       setFileOverride: (id, settings) =>
         set((state) => ({
           perFileOverrides: {

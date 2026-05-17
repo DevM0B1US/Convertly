@@ -60,6 +60,12 @@ pub struct ConversionSettings {
     #[serde(default)]
     pub resize: Option<ResizeConfig>,
     pub strip_metadata: bool,
+    #[serde(default)]
+    pub fps: Option<u32>,
+    #[serde(default)]
+    pub audio_channels: Option<u8>,
+    #[serde(default)]
+    pub speed: Option<String>,
 }
 
 impl Default for ConversionSettings {
@@ -69,6 +75,9 @@ impl Default for ConversionSettings {
             quality: 85,
             resize: None,
             strip_metadata: false,
+            fps: None,
+            audio_channels: None,
+            speed: None,
         }
     }
 }
