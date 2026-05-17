@@ -116,13 +116,27 @@ pub async fn convert_media(
 
     let cmd = app_handle.shell().command("ffmpeg").args(&args);
 
-    let (mut rx, _child) = match cmd.spawn() {
+    struct ChildGuard {
+        child: Option<tauri_plugin_shell::process::CommandChild>,
+    }
+
+    impl Drop for ChildGuard {
+        fn drop(&mut self) {
+            if let Some(child) = self.child.take() {
+                let _ = child.kill();
+            }
+        }
+    }
+
+    let (mut rx, child) = match cmd.spawn() {
         Ok(c) => c,
         Err(e) => return Err(format!(
             "Failed to spawn ffmpeg: {}. Please install FFmpeg and verify it is available on your system's PATH.",
             e
         )),
     };
+
+    let mut guard = ChildGuard { child: Some(child) };
 
     let mut exit_code = None;
     let mut duration_secs: Option<f64> = None;
@@ -169,6 +183,9 @@ pub async fn convert_media(
             _ => {}
         }
     }
+
+    // Disarm the guard on success / termination
+    guard.child.take();
 
     match exit_code {
         Some(0) => Ok(output_path.to_path_buf()),
