@@ -2,7 +2,7 @@
 
 > High-performance, privacy-first file converter for images, video, and audio — built with Tauri v2 + React + Rust.
 
-Convertly is a native desktop app that converts media files entirely on your machine. No uploads, no servers, no data leaving your computer.
+Convertly is a native desktop application that converts media files entirely on-device. No uploads, no servers, no data leaves your machine.
 
 ## Features
 
@@ -44,14 +44,9 @@ Convertly is a native desktop app that converts media files entirely on your mac
 ## Getting Started
 
 ```bash
-# Clone the repo
 git clone https://github.com/DevM0B1US/Convertly.git
 cd Convertly
-
-# Install frontend dependencies
 npm install
-
-# Run in development mode
 npm run tauri dev
 ```
 
@@ -89,36 +84,17 @@ src-tauri/                    # Backend (Rust)
 └── Cargo.toml                # Rust dependencies
 ```
 
-## Default Settings
-
-| Setting | Default |
-|---|---|
-| Output format | WebP |
-| Quality | 85 |
-| Resize | None (original) |
-| Strip metadata | Off |
-| Output directory | `~/Downloads/Convertly` |
-| Max concurrent conversions | 2 |
-
 ## Architecture
 
 Convertly uses Tauri's IPC bridge to communicate between the React frontend and Rust backend:
 
 1. **Frontend** manages the UI, conversion queue (Zustand), and user settings
 2. **Backend commands** handle file validation, metadata extraction, and conversion execution
-3. **Image conversion** uses the `image` crate (pure Rust, fast, supports many formats with Lanczos3 resizing)
+3. **Image conversion** uses the `image` crate (pure Rust with Lanczos3 resizing)
 4. **Video/Audio conversion** spawns FFmpeg as a subprocess with controlled arguments
 5. **Progress** flows back via Tauri events (`conversion:progress`, `conversion:complete`, `conversion:error`)
 6. **Concurrency** is managed by a Tokio semaphore (max 2 concurrent tasks)
 
-## Status
-
-Convertly is in early development (v0.1.0). Features like cancel/pause conversion, history view, and queue reordering are partially or fully implemented. Expect changes.
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri extension](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-
 ## License
 
-This project is currently not licensed. All rights reserved.
+Copyright (C) 2025 Ceazar Ian S. Edit. Licensed under the [GNU General Public License v3.0](LICENSE).
