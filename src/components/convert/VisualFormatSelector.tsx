@@ -237,6 +237,12 @@ export const VisualFormatSelector = ({ onBrowse }: VisualFormatSelectorProps) =>
                   onSelect={(format) => {
                     setGlobalFormat(format);
                     setIsOpen(false);
+                    // Reset finished items that inherit the global format to queued
+                    useQueueStore.getState().items.forEach(item => {
+                      if (item.status === "done" && !item.settings?.targetFormat) {
+                        useQueueStore.getState().updateItem(item.id, { status: "queued", progress: 0 });
+                      }
+                    });
                   }}
                   onClose={() => setIsOpen(false)}
                   currentFormat={globalFormat}

@@ -15,10 +15,10 @@ pub fn convert_image(
     settings: &ConversionSettings,
     _file_id: &str,
 ) -> Result<PathBuf, String> {
-    let _ext = match settings.target_format.as_str() {
+    let format = match settings.target_format.as_str() {
         "webp" => "webp",
         "avif" => "avif",
-        "jpeg" => "jpg",
+        "jpeg" | "jpg" => "jpeg",
         "png" => "png",
         "gif" => "gif",
         "bmp" => "bmp",
@@ -52,12 +52,10 @@ pub fn convert_image(
                         }
                     }
                     (None, Some(h)) => {
-                        // Height only, maintain aspect ratio
                         let w = ((orig_w as f64 * h as f64) / orig_h as f64).round() as u32;
                         img = img.resize(w, h, FilterType::Lanczos3);
                     }
                     (Some(w), None) => {
-                        // Width only, maintain aspect ratio
                         let h = ((orig_h as f64 * w as f64) / orig_w as f64).round() as u32;
                         img = img.resize(w, h, FilterType::Lanczos3);
                     }
@@ -70,7 +68,7 @@ pub fn convert_image(
 
     let quality = settings.quality.clamp(1, 100);
 
-    match settings.target_format.as_str() {
+    match format {
         "jpeg" => {
             let file = File::create(&output_path)
                 .map_err(|e| format!("Failed to create output file: {}", e))?;
@@ -123,7 +121,7 @@ pub fn convert_image(
             img.save_with_format(&output_path, ImageFormat::Tiff)
                 .map_err(|e| format!("Failed to encode TIFF: {}", e))?;
         }
-        _ => unreachable!(),
+        other => return Err(format!("Unsupported target format: {}", other)),
     }
 
     Ok(output_path.to_path_buf())

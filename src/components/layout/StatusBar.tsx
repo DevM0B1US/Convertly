@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQueueStore } from "../../stores/queueStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 
@@ -5,33 +6,35 @@ export const StatusBar = () => {
   const items = useQueueStore((state) => state.items);
   const outputDir = useSettingsStore((state) => state.outputDir);
 
-  const totalItems = items.length;
-  const activeItems = items.filter(
-    (item) => item.status === "converting" || item.status === "queued"
-  );
-  const doneItems = items.filter((item) => item.status === "done");
-  const failedItems = items.filter((item) => item.status === "error");
+  const { activeItems, doneItems, overallPercent, statusText, detailText } = useMemo(() => {
+    const totalItems = items.length;
+    const activeItems = items.filter(
+      (item) => item.status === "converting" || item.status === "queued"
+    );
+    const doneItems = items.filter((item) => item.status === "done");
+    const failedItems = items.filter((item) => item.status === "error");
 
-  // Calculate overall progress based on each file's progress
-  const totalProgress = items.reduce((sum, item) => sum + (item.progress || 0), 0);
-  const overallPercent = totalItems > 0 ? Math.round(totalProgress / totalItems) : 0;
+    const totalProgress = items.reduce((sum, item) => sum + (item.progress || 0), 0);
+    const overallPercent = totalItems > 0 ? Math.round(totalProgress / totalItems) : 0;
 
-  // Determine status bar text
-  let statusText = "Ready";
-  let detailText = `${totalItems} file${totalItems !== 1 ? "s" : ""} queued`;
+    let statusText = "Ready";
+    let detailText = `${totalItems} file${totalItems !== 1 ? "s" : ""} queued`;
 
-  if (activeItems.length > 0) {
-    statusText = "Converting";
-    detailText = `${doneItems.length} of ${totalItems} completed (${overallPercent}%)`;
-  } else if (totalItems > 0 && (doneItems.length > 0 || failedItems.length > 0)) {
-    if (failedItems.length > 0) {
-      statusText = "Batch Completed";
-      detailText = `${doneItems.length} succeeded, ${failedItems.length} failed`;
-    } else {
-      statusText = "Batch Completed";
-      detailText = `All ${doneItems.length} files successfully converted!`;
+    if (activeItems.length > 0) {
+      statusText = "Converting";
+      detailText = `${doneItems.length} of ${totalItems} completed (${overallPercent}%)`;
+    } else if (totalItems > 0 && (doneItems.length > 0 || failedItems.length > 0)) {
+      if (failedItems.length > 0) {
+        statusText = "Batch Completed";
+        detailText = `${doneItems.length} succeeded, ${failedItems.length} failed`;
+      } else {
+        statusText = "Batch Completed";
+        detailText = `All ${doneItems.length} files successfully converted!`;
+      }
     }
-  }
+
+    return { activeItems, doneItems, overallPercent, statusText, detailText };
+  }, [items]);
 
   return (
     <div className="h-7 border-t border-border bg-surface px-3 flex items-center justify-between text-xs text-muted relative overflow-hidden">

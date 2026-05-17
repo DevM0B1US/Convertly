@@ -31,6 +31,9 @@ export const SettingsPanel = () => {
   
   const [isConverting, setIsConverting] = useState(false);
 
+  const hasItemsToConvert = items.some(item => item.status !== "done");
+  const allItemsDone = items.length > 0 && items.every(item => item.status === "done");
+
   const presets = [1080, 720, 500, 420, 260];
   const initialIsCustom = 
     globalSettings.globalResize?.enabled && 
@@ -71,24 +74,33 @@ export const SettingsPanel = () => {
 
   const handleConvertAll = async () => {
     setIsConverting(true);
+    const shouldResetAll = items.every(item => item.status === "done");
+
     items.forEach(item => {
-      if (item.status !== "done") {
-        updateItem(item.id, { status: "queued", error: undefined });
+      if (shouldResetAll || item.status !== "done") {
+        updateItem(item.id, { status: "queued", progress: 0, error: undefined });
       }
     });
 
-    const itemsToConvert = items.map(item => ({
-      ...item,
-      settings: item.settings || {
-        targetFormat: globalSettings.globalFormat,
-        quality: globalSettings.globalQuality,
-        resize: globalSettings.globalResize,
-        stripMetadata: globalSettings.globalStripMetadata,
-        fps: globalSettings.globalFps,
-        audioChannels: globalSettings.globalAudioChannels,
-        speed: globalSettings.globalSpeed
-      }
-    }));
+    const itemsToConvert = items
+      .filter(item => shouldResetAll || item.status !== "done")
+      .map(item => ({
+        ...item,
+        settings: item.settings || {
+          targetFormat: globalSettings.globalFormat,
+          quality: globalSettings.globalQuality,
+          resize: globalSettings.globalResize,
+          stripMetadata: globalSettings.globalStripMetadata,
+          fps: globalSettings.globalFps,
+          audioChannels: globalSettings.globalAudioChannels,
+          speed: globalSettings.globalSpeed
+        }
+      }));
+
+    if (itemsToConvert.length === 0) {
+      setIsConverting(false);
+      return;
+    }
 
     try {
       await startConversion(itemsToConvert, globalSettings.outputDir || undefined, globalSettings.maxConcurrent);
@@ -339,6 +351,8 @@ export const SettingsPanel = () => {
                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               </div>
             </div>
+
+
           </div>
         )}
       </div>
@@ -393,10 +407,12 @@ export const SettingsPanel = () => {
       <div className="p-6 border-t border-border bg-surface shrink-0">
         <button 
           onClick={handleConvertAll}
-          disabled={items.length === 0 || isConverting}
+          disabled={items.length === 0 || (!hasItemsToConvert && !allItemsDone) || isConverting}
           className="w-full py-3 bg-accent hover:bg-accent/90 active:scale-[0.98] text-white rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex flex-col items-center justify-center shadow-md cursor-pointer"
         >
-          <span className="text-lg font-bold">Convert All</span>
+          <span className="text-lg font-bold">
+            {allItemsDone ? "Reconvert All" : "Convert All"}
+          </span>
           <span className="text-xs font-medium opacity-90">Start Conversion</span>
         </button>
         {!globalSettings.outputDir && (

@@ -8,14 +8,36 @@ use tauri::Emitter;
 use tauri::Manager;
 use tokio::sync::Semaphore;
 
-fn resolve_output_dir(out_dir: &Path, source_dir: Option<&str>) -> PathBuf {
+fn resolve_output_dir(out_dir: &Path, source_dir: Option<&str>, format: Option<&str>) -> Result<PathBuf, String> {
     let Some(dir_name) = source_dir else {
-        return out_dir.to_path_buf();
+        return Ok(out_dir.to_path_buf());
     };
 
-    let candidate = out_dir.join(dir_name);
-    std::fs::create_dir_all(&candidate).ok();
-    candidate
+    let target_dir_name = if let Some(fmt) = format {
+        format!("{} ({})", dir_name, fmt)
+    } else {
+        dir_name.to_string()
+    };
+
+    let base_path = out_dir.join(&target_dir_name);
+    if !base_path.exists() {
+        std::fs::create_dir_all(&base_path)
+            .map_err(|e| format!("Failed to create output directory '{}': {}", base_path.display(), e))?;
+        return Ok(base_path);
+    }
+
+    for i in 1..10000 {
+        let candidate = out_dir.join(format!("{} ({})", target_dir_name, i));
+        if !candidate.exists() {
+            std::fs::create_dir_all(&candidate)
+                .map_err(|e| format!("Failed to create output directory '{}': {}", candidate.display(), e))?;
+            return Ok(candidate);
+        }
+    }
+
+    std::fs::create_dir_all(&base_path)
+        .map_err(|e| format!("Failed to create output directory '{}': {}", base_path.display(), e))?;
+    Ok(base_path)
 }
 
 pub struct ActiveConversions {
@@ -31,7 +53,7 @@ pub async fn start_conversion(
 ) -> Result<(), String> {
     let out_dir_base = output_dir.map(std::path::PathBuf::from);
     let total = items.len();
-    let semaphore = Arc::new(Semaphore::new(max_concurrent.unwrap_or(2)));
+    let semaphore = Arc::new(Semaphore::new(max_concurrent.unwrap_or(2).clamp(1, 8)));
 
     // Cache resolved directories by their source_dir name so that multiple files from the same
     // dropped folder are placed in the same resolved output directory (avoiding duplicate (1), (2) folders).
@@ -51,7 +73,9 @@ pub async fn start_conversion(
                 if let Ok(downloads) = handle_for_task.path().download_dir() {
                     downloads.join("Convertly")
                 } else {
-                    input_path.parent().unwrap_or(Path::new("")).to_path_buf()
+                    input_path.parent().map(|p| p.to_path_buf()).unwrap_or_else(|| {
+                        std::env::temp_dir()
+                    })
                 }
             }
         };
@@ -60,12 +84,13 @@ pub async fn start_conversion(
             if let Some(cached) = resolved_dirs.get(src_dir) {
                 cached.clone()
             } else {
-                let resolved = resolve_output_dir(&base_dir, Some(src_dir));
+                let format_str = item.settings.as_ref().map(|s| s.target_format.to_uppercase());
+                let resolved = resolve_output_dir(&base_dir, Some(src_dir), format_str.as_deref())?;
                 resolved_dirs.insert(src_dir.clone(), resolved.clone());
                 resolved
             }
         } else {
-            resolve_output_dir(&base_dir, None)
+            resolve_output_dir(&base_dir, None, None)?
         };
 
         let settings = item.settings.unwrap_or_default();
@@ -146,14 +171,13 @@ pub async fn start_conversion(
                     let format = s.target_format.clone();
                     let speed = s.speed.clone();
 
-                    // Spawn a ticker to smoothly advance progress dynamically (25 fps)
                     let progress_done = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
                     let progress_done_clone = progress_done.clone();
 
                     let ticker = tokio::spawn(async move {
                         let expected_ms = estimate_duration_ms(width, height, &format, speed.as_deref());
-                        let interval_ms = 40; // 40ms interval for extremely smooth UI updates
-                        let mut elapsed_ms = 0;
+                        let interval_ms = 250;
+                        let mut elapsed_ms = 0u64;
 
                         loop {
                             tokio::time::sleep(tokio::time::Duration::from_millis(interval_ms)).await;
@@ -162,7 +186,6 @@ pub async fn start_conversion(
                             }
                             elapsed_ms += interval_ms;
 
-                            // Exponential decay curve: starts fast, asymptotically slows down as it approaches 95%
                             let ratio = (elapsed_ms as f64 / expected_ms as f64).min(2.0);
                             let percent = (1.0 - (-ratio).exp()) * 95.0;
 

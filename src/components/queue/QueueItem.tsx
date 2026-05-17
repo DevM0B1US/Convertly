@@ -98,7 +98,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   const handleConvert = async () => {
     if (!item) return;
-    updateItem(id, { status: "queued", error: undefined });
+    updateItem(id, { status: "queued", progress: 0, error: undefined });
     const settings = {
       targetFormat: item.settings?.targetFormat || globalFormat,
       quality: item.settings?.quality ?? globalQuality,
@@ -113,6 +113,8 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   const handleFormatChange = (newFormat: TargetFormat) => {
     updateItem(id, {
+      status: "queued",
+      progress: 0,
       settings: {
         ...(item?.settings || {
           quality: globalQuality,
@@ -131,7 +133,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   const getStatusText = () => {
     switch (status) {
-      case "converting": return `Converting... ${progress || 0}%`;
+      case "converting": return `Converting... ${Math.floor(progress || 0)}%`;
       case "queued": return "Waiting...";
       case "done": return "Finished";
       case "error": return "Conversion failed";
@@ -167,14 +169,14 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
   return (
     <div 
-      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.005] hover:border-border/80 transition-[transform,box-shadow,border-color] duration-200 ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
+      className={`relative bg-surface border border-border rounded-lg hover:shadow-md hover:scale-[1.002] hover:border-border/80 transition-all duration-200 overflow-hidden ${shouldAnimate ? 'animate-queue-slide-in' : ''}`}
       style={{
         animationDelay: shouldAnimate ? `${index * 40}ms` : undefined
       }}
     >
-      <div className="flex items-center gap-4 px-4 pt-4 pb-3">
+      <div className="flex items-center gap-3 px-3 py-2.5 min-h-[64px]">
         {/* File Type Icon / Preview */}
-        <div className="w-12 h-12 rounded-xl bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 shadow-sm">
+        <div className="w-10 h-10 rounded-lg bg-muted/5 flex items-center justify-center text-muted shrink-0 overflow-hidden relative border border-border/45 shadow-sm">
           {imageUrl ? (
             <img 
               ref={imgRef}
@@ -185,7 +187,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
               onLoad={() => setImageLoaded(true)}
             />
           ) : (
-            <Icon size={24} className="text-muted" />
+            <Icon size={20} className="text-muted" />
           )}
         </div>
 
@@ -194,7 +196,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
           <div className="flex items-center gap-2 min-w-0">
             {item?.sourceDir && (
               <span 
-                className="text-[10px] font-bold tracking-wider uppercase bg-accent/15 text-accent px-1.5 py-0.5 rounded shrink-0 select-none border border-accent/10 shadow-sm"
+                className="text-[9px] font-bold tracking-wider uppercase bg-accent/15 text-accent px-1.5 py-0.5 rounded shrink-0 select-none border border-accent/10 shadow-sm"
                 title={`Original folder: ${item.sourceDir}`}
               >
                 {item.sourceDir}
@@ -202,19 +204,35 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
             )}
             <span className="font-semibold text-sm text-text truncate" title={item?.path || name}>{name}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted mt-1">
+          <div className="flex items-center gap-2 text-xs text-muted mt-0.5">
             <span>{size}</span>
             <span className="opacity-40">•</span>
             <span>{sourceFormat}</span>
+            {status && (
+              <>
+                <span className="opacity-40">•</span>
+                <span className={`font-semibold ${
+                  status === "error" ? "text-error" :
+                  status === "done" ? "text-success" :
+                  status === "queued" ? "text-muted" :
+                  "text-primary animate-pulse"
+                }`}>
+                  {getStatusText()}
+                </span>
+              </>
+            )}
           </div>
+          {friendlyError && (
+            <p className="text-[10px] text-error/90 mt-0.5 leading-tight font-medium truncate" title={friendlyError}>{friendlyError}</p>
+          )}
         </div>
 
         {/* Actions & Format Transformation */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           {status === "queued" && (
             <button 
               onClick={handleConvert}
-              className="h-8 px-4 rounded-lg bg-accent text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
+              className="h-8 px-3 rounded-lg bg-accent text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer"
             >
               Convert
             </button>
@@ -222,37 +240,34 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
           {status === "error" && (
             <button 
               onClick={handleConvert}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-error/10 text-error text-xs font-semibold transition-all hover:bg-error/20 active:scale-95 border border-error/20"
+              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-error/10 text-error text-xs font-semibold transition-all hover:bg-error/20 active:scale-95 border border-error/20"
             >
-              <RefreshCw size={14} />
+              <RefreshCw size={12} />
               Retry
             </button>
           )}
           {status === "done" && (
             <button 
               onClick={handleConvert}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-success/10 text-success text-xs font-semibold transition-all hover:bg-success/20 active:scale-95 border border-success/20"
+              className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-success/10 text-success text-xs font-semibold transition-all hover:bg-success/20 active:scale-95 border border-success/20"
             >
-              <RefreshCw size={14} />
+              <RefreshCw size={12} />
               Reconvert
             </button>
           )}
 
-          <div className="flex items-center gap-2 relative" ref={popoverRef}>
-            <div className="flex items-center h-8 px-3 rounded-lg border border-border bg-muted/5">
-               <span className="text-xs font-bold text-muted/80">{sourceFormat}</span>
-            </div>
-            <span className="text-muted/30 text-xs">→</span>
+          {/* Format Selector button only (No redundant PNG -> text) */}
+          <div className="flex items-center relative" ref={popoverRef}>
             <button 
               onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-              className={`flex items-center gap-2 h-8 px-3 rounded-lg border transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 h-8 px-2.5 rounded-lg border text-xs font-bold transition-all duration-200 cursor-pointer ${
                 isPopoverOpen 
-                  ? 'border-accent bg-accent text-white shadow-md' 
-                  : 'border-accent/20 bg-accent/5 text-accent hover:border-accent/50'
+                  ? 'border-accent bg-accent/15 text-accent shadow-sm' 
+                  : 'border-border bg-muted/5 text-text hover:border-accent/40 hover:bg-accent/5 hover:text-accent'
               }`}
             >
-               <span className="text-xs font-bold">{targetFormat}</span>
-               <ChevronDown size={14} className={`transition-transform duration-200 ${isPopoverOpen ? 'rotate-180' : ''}`} />
+               <span>{targetFormat}</span>
+               <ChevronDown size={12} className={`transition-transform duration-200 ${isPopoverOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isPopoverOpen && (
@@ -267,26 +282,18 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
 
           <button 
             onClick={handleRemove}
-            className="p-1.5 text-muted hover:text-error transition-colors ml-1"
+            className="p-1.5 text-muted hover:text-error hover:bg-error/10 rounded-full transition-all duration-150 cursor-pointer"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
       </div>
 
-      {/* Progress Info & Bar */}
-      <div className="px-4 pb-2">
-        <div className="flex items-center justify-between text-xs font-medium mb-1">
-          <span className={status === "error" ? "text-error" : "text-muted"}>
-            {getStatusText()}
-          </span>
-        </div>
-        {friendlyError && (
-          <p className="text-xs text-error/80 mt-0.5 leading-tight">{friendlyError}</p>
-        )}
-        <div className="h-1.5 w-full bg-muted/10 rounded-full overflow-hidden">
+      {/* Integrated Bottom Progress Bar */}
+      {(status === "converting" || status === "done" || status === "error") && (
+        <div className="absolute left-0 bottom-0 right-0 h-[2px] w-full bg-transparent overflow-hidden rounded-b-lg">
           <div 
-            className={`h-full transition-all duration-300 rounded-full ${
+            className={`h-full transition-all duration-300 ${
               status === "done" ? "bg-success" : 
               status === "error" ? "bg-error" : 
               "bg-primary"
@@ -294,7 +301,7 @@ export const QueueItem = memo(({ id, name, size, status, progress, index }: Queu
             style={{ width: `${status === "done" ? 100 : progress || 0}%` }}
           />
         </div>
-      </div>
+      )}
     </div>
   );
 });
