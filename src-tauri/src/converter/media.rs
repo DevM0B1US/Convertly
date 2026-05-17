@@ -332,19 +332,25 @@ pub async fn convert_media(
 
     #[cfg(unix)]
     {
-        let _ = std::process::Command::new("renice")
+        if let Err(e) = std::process::Command::new("renice")
             .args(["-n", "10", "-p", &pid.to_string()])
-            .spawn();
+            .spawn()
+        {
+            eprintln!("[convertly] Warning: Failed to lower FFmpeg process priority (renice): {}", e);
+        }
     }
 
     #[cfg(windows)]
     {
-        let _ = std::process::Command::new("powershell")
+        if let Err(e) = std::process::Command::new("powershell")
             .args([
                 "-Command",
                 &format!("(Get-Process -Id {}).PriorityClass = 'BelowNormal'", pid),
             ])
-            .spawn();
+            .spawn()
+        {
+            eprintln!("[convertly] Warning: Failed to lower FFmpeg process priority (powershell): {}", e);
+        }
     }
 
     let mut guard = ChildGuard { child: Some(child) };

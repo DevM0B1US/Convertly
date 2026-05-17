@@ -13,13 +13,38 @@ fn resolve_output_dir(out_dir: &Path, source_dir: Option<&str>, format: Option<&
         return Ok(out_dir.to_path_buf());
     };
 
+    // Sanitize: strip any path separators or traversal components from the directory name
+    let sanitized_name = dir_name
+        .replace(['/', '\\'], "_")
+        .replace("..", "_");
+
+    if sanitized_name.is_empty() {
+        return Ok(out_dir.to_path_buf());
+    }
+
     let target_dir_name = if let Some(fmt) = format {
-        format!("{} ({})", dir_name, fmt)
+        format!("{} ({})", sanitized_name, fmt)
     } else {
-        dir_name.to_string()
+        sanitized_name
     };
 
     let base_path = out_dir.join(&target_dir_name);
+
+    // Validate the resolved path stays within the intended output directory
+    let canonical_base = std::fs::canonicalize(out_dir).unwrap_or_else(|_| out_dir.to_path_buf());
+    let canonical_target = if base_path.exists() {
+        std::fs::canonicalize(&base_path).unwrap_or_else(|_| base_path.clone())
+    } else {
+        // For paths that don't exist yet, ensure the parent resolves within bounds
+        base_path.clone()
+    };
+    if !canonical_target.starts_with(&canonical_base) {
+        return Err(format!(
+            "Output path '{}' escapes the target directory boundary",
+            base_path.display()
+        ));
+    }
+
     if !base_path.exists() {
         std::fs::create_dir_all(&base_path)
             .map_err(|e| format!("Failed to create output directory '{}': {}", base_path.display(), e))?;
@@ -122,13 +147,13 @@ pub async fn start_conversion(
             "ogg" => "ogg",
             "m4a" => "m4a",
             "wma" => "wma",
-            _ => "output",
+            _ => return Err(format!("Unsupported target format: {}", settings.target_format)),
         };
 
         let file_stem = input_path
             .file_stem()
             .and_then(|s| s.to_str())
-            .unwrap_or("output");
+            .ok_or_else(|| format!("Invalid filename: cannot extract stem from '{}'", input_path.display()))?;
 
         let output_path = match crate::utils::generate_unique_path(&out_dir_path, file_stem, ext, &reserved_paths) {
             Ok(p) => p,

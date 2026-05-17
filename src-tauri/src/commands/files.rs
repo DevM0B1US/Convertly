@@ -4,10 +4,16 @@ use std::fs;
 use uuid::Uuid;
 
 fn collect_files(path: &std::path::Path) -> Vec<(std::path::PathBuf, Option<String>)> {
-    let metadata = match fs::metadata(path) {
+    // Use symlink_metadata to avoid following symlinks (prevents traversal attacks)
+    let metadata = match fs::symlink_metadata(path) {
         Ok(m) => m,
         Err(_) => return Vec::new(),
     };
+
+    // Skip symlinks entirely to prevent directory traversal loops
+    if metadata.is_symlink() {
+        return Vec::new();
+    }
 
     if metadata.is_dir() {
         let dir_name = path.file_name().map(|n| n.to_string_lossy().to_string());

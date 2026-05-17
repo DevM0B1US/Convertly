@@ -12,7 +12,7 @@ interface SettingsState {
   globalSpeed: "ultrafast" | "medium" | "veryslow" | null; // null = Medium
   globalHwAccel: "none" | "nvenc" | "qsv" | "vaapi" | "videotoolbox" | null;
   outputDir: string | null; // null = same as source
-  maxConcurrent: number; // 1-4, default 2
+  maxConcurrent: number; // 1-8, default 2
   
   setGlobalFormat: (format: TargetFormat) => void;
   setGlobalQuality: (quality: number) => void;
