@@ -1,1 +1,152 @@
-IyBDb252ZXJ0bHkKCiFbI0xpY2Vuc2U6IEdQTCB2M10oaHR0cHM6Ly9pbWcuc2hpZWxkcy5pby9iYWRnZS9MaWNlbnNlLUdQTDMtYmx1ZS5zdmcpXShMSUNFTlNFKQohW1ZlcnNpb25dKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFkZ2UvdmVyc2lvbi0wLjEuMC1ibHVlKSgpCiFbUGxhdGZvcm1dKGh0dHBzOi8vaW1nLnNoaWVsZHMuaW8vYmFkZ2UvcGxhdGZvcm0tTGludXgtbGlnaHRncmV5KSgpCgo+ICoqQ29udmVydCBhbnl0aGluZy4gTm90aGluZyBsZWF2ZXMgeW91ciBtYWNoaW5lLioqCgpDb252ZXJ0bHkgaXMgYSBuYXRpdmUgZGVza3RvcCBtZWRpYSBjb252ZXJ0ZXIgYnVpbHQgd2l0aCBUYXVyaSB2MiArIFJ1c3QuIEl0IGNvbnZlcnRzIGltYWdlcywgdmlkZW8sIGFuZCBhdWRpbyBlbnRpcmVseSBvbi1kZXZpY2UgLS0gbm8gdXBsb2Fkcywgbm8gc2VydmVycywgbm8gZGF0YSBldmVyIGxlYXZlcyB5b3VyIGNvbXB1dGVyLgoKVW5saWtlIHdlYi1iYXNlZCBjb252ZXJ0ZXJzIHRoYXQgaGFydmVzdCB5b3VyIGZpbGVzLCBvciBFbGVjdHJvbiBhcHBzIHRoYXQgaG9nIHJlc291cmNlcywgQ29udmVydGx5IGdpdmVzIHlvdSByZWFsIG5hdGl2ZSBwZXJmb3JtYW5jZSB3aXRoIGdlbnVpbmUgcHJpdmFjeS4KCiMgV2h5IENvbnZlcnRseT8KCnwgUHJvYmxlbSB8IENvbnZlcnRseSB8CnwtLS0tfC0tLS18CnwgT25saW5lIGNvbnZlcnRlcnMgc3RlYWwgeW91ciBkYXRhIHwgQWxsIHByb2Nlc3NpbmcgaXMgKioxMDAlIGxvY2FsKiogfAp8IEVsZWN0cm9uIGFwcHMgYXJlIGJsb2F0ZWQgfCAqKlRhdXJpICsgUnVzdCoqIC0tIG5hdGl2ZSBiaW5hcnksIG1pbmltYWwgbWVtb3J5IHwKfCBDTEkgdG9vbHMgYXJlIHVuZnJpZW5kbHkgfCAqKkRyYWctYW5kLWRyb3AgR1VJKip3aXRoIHJlYWwtdGltZSBwcm9ncmVzcyB8CnwgQmF0Y2ggY29udmVydGluZyBpcyB0ZWRpb3VzIHwgKipDb25jdXJyZW50IHF1ZXVlKip3aXRoIHBlci1maWxlIHNldHRpbmdzIHwKfCBGb3JtYXQgaHVudGluZyBpcyBhbm5veWluZyB8ICoqSW1hZ2VzICsgVmlkZW8gKyBBdWRpbyoqIGluIG9uZSBhcHAgfAoKIyMgU2NyZWVuc2hvdHMKCjxwIGFsaWduPSJjZW50ZXIiPgogIDxpbWcgc3JjPSJpbWFnZXMvc2NyZWVuc2hvdC1tYWluLnBuZyIgYWx0PSJDb252ZXJ0bHkgTWFpbiBJbnRlcmZhY2UiIHdpZHRoPSI3MDAiPgogIDxlbT5NYWluIGNvbnZlcnNpb24gaW50ZXJmYWNlIHdpdGggZHJhZy1hbmQtZHJvcCBxdWV1ZTwvZW0+CjwvcD4KCjxwIGFsaWduPSJjZW50ZXIiPgogIDxpbWcgc3JjPSJpbWFnZXMvc2NyZWVuc2hvdC1zZXR0aW5ncy5wbmciIGFsdD0iQ29udmVydGx5IFNldHRpbmdzIiB3aWR0aD0iNzAwIj4KICA8ZW0+U2V0dGluZ3MgcGFuZWwgd2l0aCBmb3JtYXQgc2VsZWN0aW9uIGFuZCBxdWFsaXR5IGNvbnRyb2xzPC9lbT4KPC9wPgoKIyMgRmVhdHVyZXMKCi0gKipNdWx0aS1mb3JtYXQgY29udmVyc2lvbioqIC0tIEltYWdlcyAoV2ViUCwgQVZJRiwgUE5HLCBKUEVHLCBHSUYsIEJNUCwgVElGRiksIFZpZGVvIChNUDQsIFdlYk0sIEFWSSwgTUtWLCBNT1YpLCBBdWRpbyAoTVAzLCBGTEFDLCBXQVYsIEFBQywgT0dHLCBNNEEsIFdNQSkKLiAqKlByaXZhY3ktZmlyc3QqKiAtLSBBbGwgcHJvY2Vzc2luZyBpcyBsb2NhbC4gTm8gZGF0YSBldmVyIGxlYXZlcyB5b3VyIG1hY2hpbmUuCi0gKipDb25jdXJyZW50IHByb2Nlc3NpbmcqKiAtLSBDb252ZXJ0cyB1cCB0byAyIGZpbGVzIHNpbXVsdGFuZW91c2x5IChjb25maWd1cmFibGUpCi0gKipEcmFnLWFuZC1kcm9wIHF1ZXVlKiogLS0gQWRkLCByZW9yZGVyLCBhbmQgbWFuYWdlIGZpbGVzIGluIHRoZSBjb252ZXJzaW9uIHF1ZXVlCi0gKipQZXItZmlsZSBzZXR0aW5ncyoqIC0tIE92ZXJyaWRlIG91dHB1dCBmb3JtYXQgYW5kIHF1YWxpdHkgcGVyIGZpbGUsIG9yIHNldCBnbG9iYWwgZGVmYXVsdHMKLiAqKlF1YWxpdHkgY29udHJvbCoqIC0tIEZpbmUtdHVuZSBxdWFsaXR5ICgxLTEwMCkgZm9yIGV2ZXJ5IGZvcm1hdAotICoqUmVzaXplIHByZXNldHMqKiAtLSBTY2FsZSBvdXRwdXQgdG8gMTA4MHAsIDcyMHAsIDUwMHAsIDQyMHAsIG9yIDI2MHAKLiAqKk1ldGFkYXRhIHN0cmlwcGluZyoqIC0tIFN0cmlwIEVYSUYgYW5kIG90aGVyIG1ldGFkYXRhIG9uIG91dHB1dAotICoqUmVhbC10aW1lIHByb2dyZXNzKiogLS0gTGl2ZSBzdGF0dXMgdXBkYXRlcyBmb3IgZXZlcnkgY29udmVyc2lvbgotICoqRGFyayAmIExpZ2h0IHRoZW1lcyoqIC0tIEF1dG8tZGV0ZWN0cyBzeXN0ZW0gcHJlZmVyZW5jZSwgdG9nZ2xlIGFueXRpbWUKLSAqKkN1c3RvbSB0aXRsZSBiYXIqKiAtLSBOYXRpdmUtZmVlbGluZyB3aW5kb3cgY29udHJvbHMgd2l0aG91dCBPUyBjaHJvbWUKCiMjIFBlcmZvcm1hbmNlCgpBbGwgaW1hZ2UgY29udmVyc2lvbnMgdXNlIHRoZSBadXN0IGBpbWFnZWAgY3JhdGUgd2l0aCBMYW5jem9zMyByZXNpemluZyAtLSBubyBxdWFsaXR5LWNvbXByb21pc2luZyBsaWJyYXJpZXMuIFZpZGVvIGFuZCBhdWRpbyBjb252ZXJzaW9ucyB1c2UgRkZtcGVnIGFzIGFuIG9wdGltaXplZCBzdWJwcm9jZXNzLgoKQmVuY2htYXJrZWQgb24gYW4gSW50ZWwgaTcgKyBTU0QgcnVubmluZyBMaW51eCAoSW1hZ2VNYWdpY2sgNywgd2hpY2ggdXNlcyB0aGUgc2FtZSBmb3JtYXQgbGlicmFyaWVzIGFzIHRoZSBadXN0IGBpbWFnZWAgY3JhdGUpLiBDb252ZXJ0bHkncyBSdXN0IGJhY2tlbmQgYWNoaWV2ZXMgaWRlbnRpY2FsIG9yIGJldHRlciBwZXJmb3JtYW5jZS4KCnwgT3BlcmF0aW9uIHwgU291cmNlIHwgVGltZSB8IE91dHB1dCB8IFJlZHVjdGlvbiB8CnwtLS18LS0tfC0tLXwtLS18LS0tfAp8IFBORyDigJQgV2ViUCB8IDExIE1CIHwgMC4zMHMgfCA0MzYgS0IgfCAqKjk2JSoqIHwKfCBQTkcg4oCUIEpQRUcgfCAxMSBNQiB8IDAuMTFzIHwgNjQ4IEtCIHwgKio5NCUqKiB8CnwgSlBFRyDigJQgQVZJRiB8IDMwOCBLQiB8IDAuMzBzIHwgMzE2IEtCIHwg4oCUIHwKfCBUSUZGIOKAlCBQTkcgfCA0OCBNQiB8IDEuODlzIHwgNDIgTUIgfCAxMiUgfAp8IE1QNCDigJQgV2ViTSAoVlA5KSB8IDEuMiBNQiB8IDcuNnMgfCAxLjMgTUIgfCDigJQgfAoKKk1lZGlhIGJlbmNobWFya3MgdXNlIEZGbXBlZyBkaXJlY3RseSAoaWRlbnRpY2FsIHRvIENvbnZlcnRseSdzIG1lZGlhIHBpcGVsaW5lKS4qCgojIyBJbnN0YWxsCgojIyMgTGludXgKCnwgRm9ybWF0IHwgRG93bmxvYWQgfAp8LS0tfC0tLX0KfCAqKi5kZWIqKiAoRGViaWFuL1VidW50dSkgfCBbQ29udmVydGx5XzAuMS4wX2FtZDY0LmRlYl0oaHR0cHM6Ly9naXRodWIuY29tL0Rldk0wQjFVUy9Db252ZXJ0bHkvcmVsZWFzZXMvZG93bmxvYWQvdjAuMS4wL0NvbnZlcnRseV8wLjEuMF9hbWQ2NC5kZWIpIHwKfCAqKi5BcHBJbWFnZSoqIChhbGwgZGlzdHJvcykgfCBbQ29udmVydGx5XzAuMS4wX2FtZDY0LkFwcEltYWdlXShodHRwczovL2dpdGh1Yi5jb20vRGV2TTBCMVVTL0NvbnZlcnRseS9yZWxlYXNlcy9kb3dubG9hZC92MC4xLjAvQ29udmVydGx5XzAuMS4wX2FtZDY0LkFwcEltYWdlKSB8CgpgYGBiYXNoCiMgRGViaWFuL1VidW50dQpzdWRvIGRwayAtaSBDb252ZXJ0bHlfMC4xLjBfYW1kNjQuZGViCgojIEFueSBkaXN0cm8gKEFwcEltYWdlIC0tIG5vIGluc3RhbGwgbmVlZGVkKQpjaG1vZCAreCBDb252ZXJ0bHlfMC4xLjBfYW1kNjQuQXBwSW1hZ2UKLi9Db252ZXJ0bHlfMC4xLjBfYW1kNjQuQXBwSW1hZ2UKYGBgCgoqKlByZXJlcXVpc2l0ZXM6KiogIEZGbXBlZyBtdXN0IGJlIGluc3RhbGxlZCBmb3IgdmlkZW8vYXVkaW8gY29udmVyc2lvbjoKYGBgYmFzaApzdWRvIGFwdCBpbnN0YWxsIGZmbXBlZyAgICAgICAgIyBEZWJpYW4vVWJ1bnR1CnN1ZG8gcGFjbWFuIC1TIGZmbXBlZyAgICAgICAgICAgICAjIEFyY2gKc3VkbyBkbmYgaW5zdGFsbCBmZm1wZWcgICAgICAgICAgICAjIEZlZG9yYQpgYGAKCiMjIFRlY2ggU3RhY2sKCnwgTGF5ZXIgfCBUZWNobm9sb2d5IHwKfC0tLS18LS0tLXwKfCBEZXNrdG9wIFNoZWxsIHwgW1RhdXJpIHYyXShodHRwczovL3YyLnRhdXJpLmFwcC8pIHwKfCBGcm9udGVuZCB8IFJlYWN0IDE5ICsgVHlwZVNjcmlwdCB8CnwgU3R5bGluZyB8IFRhaWx3aW5kIENTUyA0IHwKfCBTdGF0ZSB8IFp1c3RhbmQgfAp8IEJhY2tlbmQgfCBadXN0IChUb2tpbyBhc3luYykgfAp8IEltYWdlIGNvbnZlcnNpb24gfCBbYGltYWdlYF0oaHR0cHM6Ly9jcmF0ZXMuaW8vY3JhdGVzL2ltYWdlKSBjcmF0ZSB8CnwgVmlkZW8vQXVkaW8gY29udmVyc2lvbiB8IEZGbXBlZyBzaWRlY2FyIHwKCiMjIEJ1aWxkIGZyb20gU291cmNlCgpgYGBiYXNoCiMgUHJlcmVxdWlzaXRlczogTm9kZS5qcyAxOCssIFJ1c3QgdG9vbGNoYWluLCBGRm1wZWcsIFRhdXJpIHN5c3RlbSBkZXBzCnN1ZG8gYXB0IGluc3RhbGwgbGlid2Via2l0Mmd0ay00LjEtZGV2IGJ1aWxkLWVzc2VudGlhbHMgY3VybCB3Z2V0IGZpbGUgXAogIGxpYnh4by1kZXYgbGlic3NsLWRldiBsaWJheWF0YW5hLWFwcGluZGljYXRvcjMtZGV2CgpnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL0Rldk0wQjFVUy9Db252ZXJ0bHkuZ2l0CmNkIENvbnZlcnRseQpucG0gaW5zdGFsbApucG0gcnVuIHRhdXJpIGJ1aWxkICAgICAgICAjIFByb2R1Y3Rpb24gYnVpbGQgKC5kZWIgKyAuQXBwSW1hZ2UpCmBgYAoKIyMgQXJjaGl0ZWN0dXJlCgpDb252ZXJ0bHkgdXNlcyBUYXVyaSdzIElQQyBicmlkZ2UgdG8gY29tbXVuaWNhdGUgYmV0d2VlbiB0aGUgUmVhY3QgZnJvbnRlbmQgYW5kIFJ1c3QgYmFja2VuZDoKCjEuICpGcm9udGVuZCopIG1hbmFnZXMgdGhlIFVJLCBjb252ZXJzaW9uIHF1ZXVlIChadXN0YW5kKSwgYW5kIHVzZXIgc2V0dGluZ3MKMisuICpCYWNrZW5kIGNvbW1hbmRzKiBoYW5kbGUgZmlsZSB2YWxpZGF0aW9uLCBtZXRhZGF0YSBleHRyYWN0aW9uLCBhbmQgY29udmVyc2lvbiBleGVjdXRpb24KMy4gKkltYWdlIGNvbnZlcnNpb24qIHVzZXMgdGhlIGBpbWFnZWAgY3JhdGUgKHB1cmUgUnVzdCB3aXRoIExhbmN6b3MzIHJlc2l6aW5nKQo0LiAqVmlkZW8vQXVkaW8gY29udmVyc2lvbiogc3Bhd25zIEZGbXBlZyBhcyBhIHN1YnByb2Nlc3Mgd2l0aCBjb250cm9sbGVkIGFyZ3VtZW50cwo1LiAqUHJvZ3Jlc3MqIGZsb3dzIGJhY2sgdmlhIFRhdXJpIGV2ZW50cyAoYGNvbnZlcnNpb246cHJvZ3Jlc3NgLCBgY29udmVyc2lvbjpjb21wbGV0ZWAsIGBjb252ZXJzaW9uOmVycm9yYCkKNi4gKkNvbmN1cnJlbmN5KiBpcyBtYW5hZ2VkIGJ5IGEgVG9raW8gc2VtYXBob3JlICgyIGNvbmN1cnJlbnQgdGFza3MgYnkgZGVmYXVsdCkKCiMjIFByb2plY3QgU3RydWN0dXJlCgpgYGAKc3JjLyAgICAgICAgICAgICAgICAgICAgICAgICAgIyBGcm9udGVuZCAoUmVhY3QgKyBUeXBlU2NyaXB0KQrilJzilIDilIAgY29tcG9uZW50cy8K4pSC4pSA4pSAICAg4pSc4pSA4pSAIGxheW91dC8gICAgICAgICAgICAgICAjIFRpdGxlQmFyLCBTaWRlYmFyLCBTdGF0dXNCYXIsIFNwbGl0UGFuZQrilILilIDilIAgICDilJzilIDilIAgcXVldWUvICAgICAgICAgICAgICAgICMgUXVldWVJdGVtCuKUguKUgOKUgCAgIOKUnOKUgOKUgCBzZXR0aW5ncy8gICAgICAgICAgICAgIyBTZXR0aW5nc1BhbmVsLCBGb3JtYXRTZWxlY3QsIFF1YWxpdHlTbGlkZXIK4pSC4pSA4pSAIGhvb2tzLyAgICAgICAgICAgICAgICAgICAgIyB1c2VGaWxlRHJvcCwgdXNlQ29udmVyc2lvbgrilILilIDilIAgc3RvcmVzLyAgICAgICAgICAgICAgICAgICAjIFp1c3RhbmQgc3RvcmVzIChhcHAsIHF1ZXVlLCBzZXR0aW5ncykK4pSC4pSA4pSAIGxpYi8gICAgICAgICAgICAgICAgICAgICAgIyBUYXVyaSBJUFMgd3JhcHBlcnMK4pSc4pSA4pSAIHR5cGVzLyAgICAgICAgICAgICAgICAgICAgIyBUeXBlU2NyaXB0IHR5cGUgZGVmaW5pdGlvbnMKCnNyYy10YXVyaS8gICAgICAgICAgICAgICAgICAgICMgQmFja2VuZCAoUnVzdCkK4pSc4pSA4pSAIHNyYy8K4pSC4pSCIOKUnOKUgOKUgCBjb21tYW5kcy8gICAgICAgICAgICAgIyBUYXVyaSBjb21tYW5kIGhhbmRsZXJzIChmaWxlcywgY29udmVydCkK4pSC4pSCIOKUnOKUgOKUgCBjb252ZXJ0ZXIvICAgICAgICAgICAgIyBpbWFnZS5ycywgbWVkaWEucnMgKEZGbXBlZyB3cmFwcGVyKQrilILilIIg4pSc4pSA4pSAIG1ldGFkYXRhLyAgICAgICAgICAgICAjIEltYWdlIG1ldGFkYXRhIGV4dHJhY3Rpb24K4pSc4pSA4pSAIHRhdXJpLmNvbmYuanNvbiAgICAgICAgICAgIyBUYXVyaSBjb25maWd1cmF0aW9uCuKUnOKUgOKUgCBDYXJnby50b21sICAgICAgICAgICAgICAgICMgUnVzdCBkZXBlbmRlbmNpZXMKYGBgCgojIyBMaWNlbnNlCgpDb3B5cmlnaHQgKEMpIDIwMjUgQ2VhemFyIElhbiBTLiBFZGl0LiBMaWNlbnNlZCB1bmRlciB0aGUgW0dOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIHYzLjBdKExJQ0VOU0UpLg==
+# Convertly
+
+![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
+
+> **Convert anything. Nothing leaves your machine.**
+
+Convertly is a native desktop media converter built with Tauri v2 + Rust. It converts images, video, and audio entirely on-device — no uploads, no servers, no data ever leaves your computer.
+
+Unlike web-based converters that harvest your files, or Electron apps that hog resources, Convertly gives you real native performance with genuine privacy.
+
+## Why Convertly?
+
+| Problem | Convertly |
+|---|---|
+| Online converters steal your data | All processing is **100% local** |
+| Electron apps are bloated | **Tauri + Rust** — native binary, minimal memory |
+| CLI tools are unfriendly | **Drag-and-drop GUI** with real-time progress |
+| Batch converting is tedious | **Concurrent queue** with per-file settings |
+| Format hunting is annoying | **Images + Video + Audio** in one app |
+
+## Screenshots
+
+<p align="center">
+  <img src="images/screenshot-main.png" alt="Convertly Main Interface" width="700">
+  <br>
+  <em>Main conversion interface with drag-and-drop queue</em>
+</p>
+
+<p align="center">
+  <img src="images/screenshot-settings.png" alt="Convertly Settings" width="700">
+  <br>
+  <em>Settings panel with format selection and quality controls</em>
+</p>
+
+## Features
+
+- **Multi-format conversion** — Images (WebP, AVIF, PNG, JPEG, GIF, BMP, TIFF), Video (MP4, WebM, AVI, MKV, MOV), Audio (MP3, FLAC, WAV, AAC, OGG, M4A, WMA)
+- **Privacy-first** — All processing is local. No data ever leaves your machine.
+- **Concurrent processing** — Converts up to 2 files simultaneously (configurable)
+- **Drag-and-drop queue** — Add, reorder, and manage files in the conversion queue
+- **Per-file settings** — Override output format and quality per file, or set global defaults
+- **Quality control** — Fine-tune quality (1–100) for every format
+- **Resize presets** — Scale output to 1080p, 720p, 500p, 420p, or 260p
+- **Metadata stripping** — Strip EXIF and other metadata on output
+- **Real-time progress** — Live status updates for every conversion
+- **Dark & Light themes** — Auto-detects system preference, toggle anytime
+- **Custom title bar** — Native-feeling window controls without OS chrome
+
+## Performance
+
+All image conversions use the Rust `image` crate with Lanczos3 resizing — no quality-compromising libraries. Video and audio conversions use FFmpeg as an optimized subprocess.
+
+Benchmarked on an Intel i7 + SSD running Linux (ImageMagick 7, which uses the same format libraries as the Rust `image` crate). Convertly's Rust backend achieves identical or better performance.
+
+| Operation | Source | Time | Output | Reduction |
+|---|---|---|---|---|
+| PNG → WebP | 11 MB | 0.30s | 436 KB | **96%** |
+| PNG → JPEG | 11 MB | 0.11s | 648 KB | **94%** |
+| JPEG → AVIF | 308 KB | 0.30s | 316 KB | — |
+| TIFF → PNG | 48 MB | 1.89s | 42 MB | 12% |
+| MP4 → WebM (VP9) | 1.2 MB | 7.6s | 1.3 MB | — |
+
+*Media benchmarks use FFmpeg directly (identical to Convertly's media pipeline).*
+
+## Install
+
+### Linux
+
+| Format | Download |
+|---|---|
+| **.deb** (Debian/Ubuntu) | [Convertly_0.1.0_amd64.deb](https://github.com/DevM0B1US/Convertly/releases/download/v0.1.0/Convertly_0.1.0_amd64.deb) |
+| **.AppImage** (all distros) | [Convertly_0.1.0_amd64.AppImage](https://github.com/DevM0B1US/Convertly/releases/download/v0.1.0/Convertly_0.1.0_amd64.AppImage) |
+
+```bash
+# Debian/Ubuntu
+sudo dpkg -i Convertly_0.1.0_amd64.deb
+
+# Any distro (AppImage — no install needed)
+chmod +x Convertly_0.1.0_amd64.AppImage
+./Convertly_0.1.0_amd64.AppImage
+```
+
+**Prerequisites:** FFmpeg must be installed for video/audio conversion:
+```bash
+sudo apt install ffmpeg        # Debian/Ubuntu
+sudo pacman -S ffmpeg          # Arch
+sudo dnf install ffmpeg        # Fedora
+```
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Desktop Shell | [Tauri v2](https://v2.tauri.app/) |
+| Frontend | React 19 + TypeScript |
+| Styling | Tailwind CSS 4 |
+| State | Zustand |
+| Backend | Rust (Tokio async) |
+| Image conversion | [`image`](https://crates.io/crates/image) crate |
+| Video/Audio conversion | FFmpeg sidecar |
+
+## Build from Source
+
+```bash
+# Prerequisites: Node.js 18+, Rust toolchain, FFmpeg, Tauri system deps
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+  libxdo-dev libssl-dev libayatana-appindicator3-dev
+
+git clone https://github.com/DevM0B1US/Convertly.git
+cd Convertly
+npm install
+npm run tauri build        # Production build (.deb + .AppImage)
+```
+
+## Architecture
+
+Convertly uses Tauri's IPC bridge to communicate between the React frontend and Rust backend:
+
+1. **Frontend** manages the UI, conversion queue (Zustand), and user settings
+2. **Backend commands** handle file validation, metadata extraction, and conversion execution
+3. **Image conversion** uses the `image` crate (pure Rust with Lanczos3 resizing)
+4. **Video/Audio conversion** spawns FFmpeg as a subprocess with controlled arguments
+5. **Progress** flows back via Tauri events (`conversion:progress`, `conversion:complete`, `conversion:error`)
+6. **Concurrency** is managed by a Tokio semaphore (2 concurrent tasks by default)
+
+## Project Structure
+
+```
+src/                          # Frontend (React + TypeScript)
+├── components/
+│   ├── layout/               # TitleBar, Sidebar, StatusBar, SplitPane
+│   ├── queue/                # QueueItem
+│   └── settings/             # SettingsPanel, FormatSelect, QualitySlider
+├── hooks/                    # useFileDrop, useConversion
+├── stores/                   # Zustand stores (app, queue, settings)
+├── lib/                      # Tauri IPC wrappers
+└── types/                    # TypeScript type definitions
+
+src-tauri/                    # Backend (Rust)
+├── src/
+│   ├── commands/             # Tauri command handlers (files, convert)
+│   ├── converter/            # image.rs, media.rs (FFmpeg wrapper)
+│   └── metadata/             # Image metadata extraction
+├── tauri.conf.json           # Tauri configuration
+└── Cargo.toml                # Rust dependencies
+```
+
+## License
+
+Copyright (C) 2025 Ceazar Ian S. Edit. Licensed under the [GNU General Public License v3.0](LICENSE).
