@@ -52,17 +52,7 @@ Unlike web-based converters that harvest your files, or Electron apps that hog r
 
 All image conversions use the Rust `image` crate with Lanczos3 resizing — no quality-compromising libraries. Video and audio conversions use FFmpeg as an optimized subprocess.
 
-Benchmarked on an Intel i7 + SSD running Linux (ImageMagick 7, which uses the same format libraries as the Rust `image` crate). Convertly's Rust backend achieves identical or better performance.
-
-| Operation | Source | Time | Output | Reduction |
-|---|---|---|---|---|
-| PNG → WebP | 11 MB | 0.30s | 436 KB | **96%** |
-| PNG → JPEG | 11 MB | 0.11s | 648 KB | **94%** |
-| JPEG → AVIF | 308 KB | 0.30s | 316 KB | — |
-| TIFF → PNG | 48 MB | 1.89s | 42 MB | 12% |
-| MP4 → WebM (VP9) | 1.2 MB | 7.6s | 1.3 MB | — |
-
-*Media benchmarks use FFmpeg directly (identical to Convertly's media pipeline).*
+*(Benchmarks not yet run. Performance will depend on your hardware and source media.)*
 
 ## Install
 
